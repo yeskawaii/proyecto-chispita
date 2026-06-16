@@ -4,10 +4,20 @@ from typing import List
 from src.core.db import engine, Base, get_db
 from src.models import viajes as models
 from src.schemas import viajes as schemas
+from src.services.ai import generar_ideas_viaje
+from fastapi.middleware.cors import CORSMiddleware
 
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Chispita API", version="1.0.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 def home():
@@ -70,3 +80,29 @@ def agregar_gasto(gasto: schemas.GastoCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(nuevo_gasto)
     return nuevo_gasto
+
+# ==========================================
+# ENDPOINTS: IA / IDEAS
+# ==========================================
+
+@app.get("/viajes/{viaje_id}/ideas", tags=["IA"])
+def obtener_ideas_con_ia(viaje_id: int, db: Session = Depends(get_db)):
+    # 1. Buscar el viaje en Postgres
+    viaje = db.query(models.Viaje).filter(models.Viaje.id == viaje_id).first()
+    if not viaje:
+        raise HTTPException(status_code=404, detail="Viaje no encontrado.")
+    
+    # 2. Calcular los días del viaje
+    dias = (viaje.fecha_fin - viaje.fecha_inicio).days
+    if dias <= 0:
+        dias = 1
+        
+    # 3. Mandar los datos a Gemini
+    ideas = generar_ideas_viaje(viaje.destino, dias, viaje.presupuesto_estimado)
+    
+    return {
+        "destino": viaje.destino,
+        "dias": dias,
+        "presupuesto": viaje.presupuesto_estimado,
+        "ideas_gemini": ideas
+    }
