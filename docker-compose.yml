@@ -6,7 +6,7 @@ services:
     container_name: chispita_postgres
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U yescas_admin -d chispita_db"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -17,7 +17,7 @@ services:
     volumes:
       - chispita_pgdata:/var/lib/postgresql/data
     networks:
-      - chispita_internal
+      - proxy-network
 
   backend:
     build: ./backend
@@ -31,7 +31,6 @@ services:
       db:
         condition: service_healthy
     networks:
-      - chispita_internal
       - proxy-network
 
   frontend:
@@ -45,6 +44,5 @@ volumes:
   chispita_pgdata:
 
 networks:
-  chispita_internal:
   proxy-network:
     external: true
