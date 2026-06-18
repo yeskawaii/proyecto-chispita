@@ -1,0 +1,43 @@
+name: proyecto-chispita
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: chispita_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - chispita_pgdata:/var/lib/postgresql/data
+    networks:
+      - chispita_internal
+
+  backend:
+    build: ./backend
+    container_name: chispita_backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+    depends_on:
+      - db
+    networks:
+      - chispita_internal
+      - proxy-network
+
+  frontend:
+    build: ./frontend
+    container_name: chispita_frontend
+    restart: unless-stopped
+    networks:
+      - proxy-network
+
+volumes:
+  chispita_pgdata:
+
+networks:
+  chispita_internal:
+  proxy-network:
+    external: true
