@@ -14,7 +14,7 @@ export default function TarjetaViaje({ viaje }) {
       const datos = await getIdeasIA(viaje.id);
       setIdeas(datos.ideas_gemini);
     } catch (error) {
-      setIdeas("Hubo un error de conexión con Gemini.");
+      setIdeas("Error de conexión con Gemini.");
     } finally {
       setCargando(false);
     }
@@ -32,18 +32,12 @@ export default function TarjetaViaje({ viaje }) {
     setMostrarGastos(!mostrarGastos);
   };
 
-  const manejarCambioGasto = (e) => {
-    setNuevoGasto({ ...nuevoGasto, [e.target.name]: e.target.value });
-  };
+  const manejarCambioGasto = (e) => setNuevoGasto({ ...nuevoGasto, [e.target.name]: e.target.value });
 
   const agregarGasto = async (e) => {
     e.preventDefault();
     try {
-      const gastoFormateado = {
-        descripcion: nuevoGasto.descripcion,
-        monto: parseFloat(nuevoGasto.monto)
-      };
-      const gastoGuardado = await postGasto(viaje.id, gastoFormateado);
+      const gastoGuardado = await postGasto(viaje.id, { descripcion: nuevoGasto.descripcion, monto: parseFloat(nuevoGasto.monto) });
       setListaGastos([...listaGastos, gastoGuardado]);
       setNuevoGasto({ descripcion: '', monto: '' });
     } catch (error) {
@@ -55,61 +49,58 @@ export default function TarjetaViaje({ viaje }) {
   const restante = viaje.presupuesto_estimado - totalGastado;
 
   return (
-    <li className="tarjeta">
-      <h3>{viaje.destino}</h3>
-      <p className="dato"><strong>Inicio:</strong> {viaje.fecha_inicio}</p>
-      <p className="dato"><strong>Fin:</strong> {viaje.fecha_fin}</p>
-      <p className="dato"><strong>Presupuesto:</strong> ${viaje.presupuesto_estimado} MXN</p>
+    <li className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl hover:shadow-indigo-500/10 transition-all duration-300 hover:-translate-y-1 relative overflow-hidden group flex flex-col">
+      {/* Línea decorativa arriba */}
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-emerald-500 opacity-50 group-hover:opacity-100 transition-opacity"></div>
       
-      <div className="acciones-tarjeta">
-        <button className="btn-accion btn-ia" onClick={traerIdeas} disabled={cargando}>
-          {cargando ? 'Pensando...' : '✨ Ideas IA'}
+      <h3 className="text-2xl font-bold text-indigo-400 mb-4 pb-3 border-b border-slate-800/60">{viaje.destino}</h3>
+      
+      <div className="space-y-2 text-sm text-slate-400 mb-6 flex-grow">
+        <p><strong className="text-slate-300">Inicio:</strong> {viaje.fecha_inicio}</p>
+        <p><strong className="text-slate-300">Fin:</strong> {viaje.fecha_fin}</p>
+        <p><strong className="text-slate-300">Presupuesto:</strong> <span className="text-emerald-400 font-semibold">${viaje.presupuesto_estimado} MXN</span></p>
+      </div>
+      
+      <div className="flex gap-3 mt-auto">
+        <button onClick={traerIdeas} disabled={cargando} className="flex-1 py-2 px-3 bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 disabled:bg-slate-800 disabled:text-slate-600 rounded-lg font-semibold transition-colors text-sm">
+          {cargando ? 'Pensando...' : '✨ IA Ideas'}
         </button>
-        <button className={`btn-accion btn-gastos ${mostrarGastos ? 'activo' : ''}`} onClick={toggleGastos}>
-          {mostrarGastos ? 'Ocultar Gastos' : '💸 Ver Gastos'}
+        <button onClick={toggleGastos} className={`flex-1 py-2 px-3 rounded-lg font-semibold transition-colors text-sm ${mostrarGastos ? 'bg-slate-800 text-slate-300' : 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'}`}>
+          {mostrarGastos ? 'Ocultar' : '💸 Gastos'}
         </button>
       </div>
       
       {ideas && (
-        <div className="seccion-ia">
-          <strong>Ideas para {viaje.destino}:</strong>
-          <p style={{ whiteSpace: 'pre-wrap', margin: '8px 0 0 0' }}>{ideas}</p>
+        <div className="mt-5 p-4 bg-indigo-950/30 border border-indigo-900/50 rounded-xl text-sm text-indigo-200">
+          <p className="whitespace-pre-wrap">{ideas}</p>
         </div>
       )}
 
       {mostrarGastos && (
-        <div className="seccion-gastos">
-          <h4 style={{ margin: '0 0 15px 0', color: '#1f2937' }}>Control de Gastos</h4>
-          
-          <form className="form-gasto" onSubmit={agregarGasto}>
-            <input className="input-estilo" style={{flex: 2}} type="text" name="descripcion" placeholder="¿En qué gastaste?" value={nuevoGasto.descripcion} onChange={manejarCambioGasto} required />
-            <input className="input-estilo" style={{flex: 1}} type="number" name="monto" placeholder="$ Monto" value={nuevoGasto.monto} onChange={manejarCambioGasto} required />
-            <button type="submit" className="btn-principal" style={{padding: '8px 16px'}}>+</button>
+        <div className="mt-5 p-4 bg-slate-950/50 border border-slate-800 rounded-xl">
+          <form className="flex gap-2 mb-4" onSubmit={agregarGasto}>
+            <input className="flex-2 bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500 w-full" type="text" name="descripcion" placeholder="Concepto" value={nuevoGasto.descripcion} onChange={manejarCambioGasto} required />
+            <input className="flex-1 bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500 w-24" type="number" name="monto" placeholder="$" value={nuevoGasto.monto} onChange={manejarCambioGasto} required />
+            <button type="submit" className="bg-emerald-600 hover:bg-emerald-500 text-white px-3 rounded font-bold transition-colors">+</button>
           </form>
 
-          {listaGastos.length === 0 ? (
-            <p style={{ fontSize: '0.9rem', color: '#6b7280', margin: 0 }}>No hay gastos registrados aún.</p>
-          ) : (
-            <ul className="lista-gastos">
-              {listaGastos.map((gasto, index) => (
-                <li key={index}>
-                  <span style={{color: '#374151'}}>{gasto.descripcion}</span>
-                  <span style={{ fontWeight: 'bold', color: '#ef4444' }}>-${gasto.monto}</span>
-                </li>
-              ))}
-            </ul>
-          )}
+          <ul className="space-y-2 mb-4 max-h-32 overflow-y-auto pr-1">
+            {listaGastos.map((gasto, i) => (
+              <li key={i} className="flex justify-between text-sm border-b border-slate-800/50 pb-1">
+                <span className="text-slate-300">{gasto.descripcion}</span>
+                <span className="text-red-400 font-medium">-${gasto.monto}</span>
+              </li>
+            ))}
+          </ul>
           
-          <div className="resumen-gastos">
-            <div className="fila-resumen">
-              <span style={{fontWeight: 'bold', color: '#111827'}}>Total Gastado:</span>
-              <span style={{fontWeight: 'bold', color: '#111827'}}>${totalGastado} MXN</span>
+          <div className="pt-3 border-t border-slate-700/50 text-sm">
+            <div className="flex justify-between mb-1">
+              <span className="text-slate-400">Total Gastado:</span>
+              <span className="font-bold text-slate-200">${totalGastado} MXN</span>
             </div>
-            <div className="fila-resumen">
-              <span style={{color: '#6b7280'}}>Presupuesto Restante:</span>
-              <span style={{ fontWeight: 'bold', color: restante < 0 ? '#ef4444' : '#10b981' }}>
-                ${restante} MXN
-              </span>
+            <div className="flex justify-between">
+              <span className="text-slate-400">Restante:</span>
+              <span className={`font-bold ${restante < 0 ? 'text-red-500' : 'text-emerald-400'}`}>${restante} MXN</span>
             </div>
           </div>
         </div>
