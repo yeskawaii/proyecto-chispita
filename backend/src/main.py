@@ -53,7 +53,6 @@ def obtener_viaje_completo(viaje_id: int, db: Session = Depends(get_db)):
 
 @app.post("/itinerarios/", response_model=schemas.ItinerarioResponse, tags=["Itinerarios"])
 def agregar_itinerario(item: schemas.ItinerarioCreate, db: Session = Depends(get_db)):
-    # Validar primero si el viaje existe
     viaje_existe = db.query(models.Viaje).filter(models.Viaje.id == item.viaje_id).first()
     if not viaje_existe:
         raise HTTPException(status_code=404, detail="No puedes meter itinerario a un viaje que no existe.")
@@ -81,25 +80,31 @@ def agregar_gasto(gasto: schemas.GastoCreate, db: Session = Depends(get_db)):
     db.refresh(nuevo_gasto)
     return nuevo_gasto
 
+@app.get("/viajes/{viaje_id}/gastos/", response_model=List[schemas.GastoResponse], tags=["Gastos"])
+def obtener_gastos_viaje(viaje_id: int, db: Session = Depends(get_db)):
+    viaje = db.query(models.Viaje).filter(models.Viaje.id == viaje_id).first()
+    if not viaje:
+        raise HTTPException(status_code=404, detail="Ese viaje no existe.")
+    
+    gastos = db.query(models.Gasto).filter(models.Gasto.viaje_id == viaje_id).all()
+    return gastos
+
 # ==========================================
 # ENDPOINTS: IA / IDEAS
 # ==========================================
 
 @app.get("/viajes/{viaje_id}/ideas", tags=["IA"])
 def obtener_ideas_con_ia(viaje_id: int, db: Session = Depends(get_db)):
-    # 1. Buscar el viaje en Postgres
     viaje = db.query(models.Viaje).filter(models.Viaje.id == viaje_id).first()
     if not viaje:
         raise HTTPException(status_code=404, detail="Viaje no encontrado.")
-    
-    # 2. Calcular los días del viaje
+
     dias = (viaje.fecha_fin - viaje.fecha_inicio).days
     if dias <= 0:
         dias = 1
-        
-    # 3. Mandar los datos a Gemini
+
     ideas = generar_ideas_viaje(viaje.destino, dias, viaje.presupuesto_estimado)
-    
+
     return {
         "destino": viaje.destino,
         "dias": dias,

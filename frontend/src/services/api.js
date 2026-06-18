@@ -1,5 +1,6 @@
-const API_URL = 'https://api-chispita.duckdns.org';
+const API_URL = import.meta.env.VITE_API_URL;
 
+// apis de viajes
 export const getViajes = async () => {
   const res = await fetch(`${API_URL}/viajes/`);
   return res.json();
@@ -14,7 +15,23 @@ export const postViaje = async (viaje) => {
   return res.json();
 };
 
+// api de ia
 export const getIdeasIA = async (viajeId) => {
   const res = await fetch(`${API_URL}/viajes/${viajeId}/ideas`);
+  return res.json();
+};
+
+// api de gastos
+export const getGastos = async (viajeId) => {
+  const res = await fetch(`${API_URL}/viajes/${viajeId}/gastos/`);
+  return res.json();
+};
+
+export const postGasto = async (viajeId, gasto) => {
+  const res = await fetch(`${API_URL}/gastos/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ...gasto, viaje_id: viajeId })
+  });
   return res.json();
 };
