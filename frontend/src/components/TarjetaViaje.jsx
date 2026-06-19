@@ -39,12 +39,12 @@ export default function TarjetaViaje({ viaje, onDelete }) {
   const agregarGasto = async (e) => {
     e.preventDefault();
     try {
-      const payload = { 
-        concepto: nuevoGasto.concepto, 
+      const payload = {
+        concepto: nuevoGasto.concepto,
         monto: parseFloat(nuevoGasto.monto),
         fecha_pago: new Date().toISOString().split('T')[0]
       };
-      
+
       const gastoGuardado = await postGasto(viaje.id, payload);
       setListaGastos([...listaGastos, gastoGuardado]);
       setNuevoGasto({ concepto: '', monto: '' });
@@ -78,7 +78,7 @@ export default function TarjetaViaje({ viaje, onDelete }) {
     <li className="bg-white border border-teal-100 rounded-2xl p-6 shadow-lg hover:shadow-teal-500/20 transition-all duration-300 hover:-translate-y-1 relative overflow-hidden group flex flex-col">
       {/* Línea decorativa arriba: tonos caribeños */}
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-teal-400 to-cyan-500 opacity-70 group-hover:opacity-100 transition-opacity"></div>
-      
+
       <div className="mb-4 pb-3 border-b border-gray-100 flex justify-between items-start">
         <div>
           <h3 className="text-2xl font-bold text-teal-800">{viaje.titulo}</h3>
@@ -90,13 +90,13 @@ export default function TarjetaViaje({ viaje, onDelete }) {
           🗑️
         </button>
       </div>
-      
+
       <div className="space-y-2 text-sm text-gray-600 mb-6 flex-grow">
         <p><strong className="text-gray-800">Inicio:</strong> {viaje.fecha_inicio}</p>
         <p><strong className="text-gray-800">Fin:</strong> {viaje.fecha_fin}</p>
         <p><strong className="text-gray-800">Presupuesto:</strong> <span className="text-emerald-600 font-semibold">${viaje.presupuesto_estimado} MXN</span></p>
       </div>
-      
+
       <div className="flex gap-3 mt-auto">
         <button onClick={traerIdeas} disabled={cargando} className="flex-1 py-2 px-3 bg-cyan-50 text-cyan-700 hover:bg-cyan-100 disabled:bg-gray-100 disabled:text-gray-400 rounded-lg font-semibold transition-colors text-sm border border-cyan-100">
           {cargando ? 'Pensando...' : '✨ IA Ideas'}
@@ -108,10 +108,13 @@ export default function TarjetaViaje({ viaje, onDelete }) {
           {mostrarItinerario ? 'Ocultar Itinerario' : '📅 Itinerario'}
         </button>
       </div>
-      
+
       {ideas && (
-        <div className="mt-5 p-4 bg-cyan-50/50 border border-cyan-100 rounded-xl text-sm text-cyan-900">
-          <p className="whitespace-pre-wrap">{ideas}</p>
+        <div className="mt-5 p-4 bg-cyan-50/50 border border-cyan-100 rounded-xl text-sm text-cyan-900 relative">
+          <button onClick={() => setIdeas('')} className="absolute top-2 right-2 text-cyan-500 hover:text-cyan-800 transition-colors text-xs" title="Cerrar ideas">
+            ❌
+          </button>
+          <p className="whitespace-pre-wrap mt-2">{ideas}</p>
         </div>
       )}
 
@@ -134,7 +137,7 @@ export default function TarjetaViaje({ viaje, onDelete }) {
               </li>
             ))}
           </ul>
-          
+
           <div className="pt-3 border-t border-gray-200 text-sm">
             <div className="flex justify-between mb-1">
               <span className="text-gray-500">Total Gastado:</span>

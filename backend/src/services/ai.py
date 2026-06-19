@@ -14,6 +14,9 @@ def generar_ideas_viaje(destino: str, dias: int, presupuesto: float):
     response = client.models.generate_content(
         model='gemini-2.5-flash',
         contents=prompt,
+        config=genai.types.GenerateContentConfig(
+            temperature=0.9,
+        )
     )
     
     return response.text
