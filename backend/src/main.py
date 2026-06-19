@@ -1,6 +1,15 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
+from pydantic import BaseModel
+import os
+
+try:
+    from pywebpush import webpush, WebPushException
+except ImportError:
+    webpush = None
+    WebPushException = Exception
+
 from src.core.db import engine, Base, get_db
 from src.models import viajes as models
 from src.schemas import viajes as schemas
@@ -151,3 +160,50 @@ def obtener_ideas_con_ia(viaje_id: int, db: Session = Depends(get_db)):
         "presupuesto": viaje.presupuesto_estimado,
         "ideas_gemini": ideas
     }
+
+# ==========================================
+# ENDPOINTS: PUSH NOTIFICATIONS
+# ==========================================
+
+class PushKeys(BaseModel):
+    p256dh: str
+    auth: str
+
+class PushSubscription(BaseModel):
+    endpoint: str
+    keys: PushKeys
+
+# Almacenamiento en memoria temporal para las suscripciones
+suscripciones_guardadas = []
+
+@app.post("/notificaciones/suscribir", tags=["Notificaciones"])
+def suscribir_notificacion(sub: PushSubscription):
+    suscripciones_guardadas.append(sub.model_dump())
+    return {"status": "ok", "mensaje": "Suscripción guardada en memoria."}
+
+@app.post("/notificaciones/probar", tags=["Notificaciones"])
+def probar_notificacion():
+    if not webpush:
+        raise HTTPException(status_code=500, detail="pywebpush no está instalado.")
+    if not suscripciones_guardadas:
+        raise HTTPException(status_code=400, detail="No hay suscripciones guardadas.")
+    
+    private_key = os.getenv("VAPID_PRIVATE_KEY")
+    if not private_key:
+        raise HTTPException(status_code=500, detail="Falta configurar VAPID_PRIVATE_KEY en el .env")
+        
+    sub = suscripciones_guardadas[-1]
+    
+    try:
+        webpush(
+            subscription_info=sub,
+            data='{"title": "¡Hola!", "body": "Esta es una notificación de prueba desde FastAPI."}',
+            vapid_private_key=private_key,
+            vapid_claims={
+                "sub": "mailto:admin@proyecto-chispita.com"
+            }
+        )
+        return {"status": "ok", "mensaje": "Notificación enviada a la última suscripción registrada."}
+    except WebPushException as ex:
+        print("Error enviando Web Push:", ex)
+        raise HTTPException(status_code=500, detail=str(ex))

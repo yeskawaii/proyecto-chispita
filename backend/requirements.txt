@@ -6,3 +6,5 @@ pydantic
 python-dotenv
 google-genai
 urllib3<2
+pywebpush
+cryptography
