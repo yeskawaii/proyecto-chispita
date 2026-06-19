@@ -6,7 +6,7 @@ export default function TarjetaViaje({ viaje }) {
   const [cargando, setCargando] = useState(false);
   const [mostrarGastos, setMostrarGastos] = useState(false);
   const [listaGastos, setListaGastos] = useState([]);
-  const [nuevoGasto, setNuevoGasto] = useState({ descripcion: '', monto: '' });
+  const [nuevoGasto, setNuevoGasto] = useState({ concepto: '', monto: '' });
 
   const traerIdeas = async () => {
     setCargando(true);
@@ -37,9 +37,15 @@ export default function TarjetaViaje({ viaje }) {
   const agregarGasto = async (e) => {
     e.preventDefault();
     try {
-      const gastoGuardado = await postGasto(viaje.id, { descripcion: nuevoGasto.descripcion, monto: parseFloat(nuevoGasto.monto) });
+      const payload = { 
+        concepto: nuevoGasto.concepto, 
+        monto: parseFloat(nuevoGasto.monto),
+        fecha_pago: new Date().toISOString().split('T')[0]
+      };
+      
+      const gastoGuardado = await postGasto(viaje.id, payload);
       setListaGastos([...listaGastos, gastoGuardado]);
-      setNuevoGasto({ descripcion: '', monto: '' });
+      setNuevoGasto({ concepto: '', monto: '' });
     } catch (error) {
       console.error("Error al guardar el gasto:", error);
     }
@@ -50,7 +56,6 @@ export default function TarjetaViaje({ viaje }) {
 
   return (
     <li className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl hover:shadow-indigo-500/10 transition-all duration-300 hover:-translate-y-1 relative overflow-hidden group flex flex-col">
-      {/* Línea decorativa arriba */}
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-emerald-500 opacity-50 group-hover:opacity-100 transition-opacity"></div>
       
       <h3 className="text-2xl font-bold text-indigo-400 mb-4 pb-3 border-b border-slate-800/60">{viaje.destino}</h3>
@@ -79,7 +84,8 @@ export default function TarjetaViaje({ viaje }) {
       {mostrarGastos && (
         <div className="mt-5 p-4 bg-slate-950/50 border border-slate-800 rounded-xl">
           <form className="flex gap-2 mb-4" onSubmit={agregarGasto}>
-            <input className="flex-2 bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500 w-full" type="text" name="descripcion" placeholder="Concepto" value={nuevoGasto.descripcion} onChange={manejarCambioGasto} required />
+            {/* 3. Cambiamos el name y value a "concepto" */}
+            <input className="flex-2 bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500 w-full" type="text" name="concepto" placeholder="Concepto" value={nuevoGasto.concepto} onChange={manejarCambioGasto} required />
             <input className="flex-1 bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500 w-24" type="number" name="monto" placeholder="$" value={nuevoGasto.monto} onChange={manejarCambioGasto} required />
             <button type="submit" className="bg-emerald-600 hover:bg-emerald-500 text-white px-3 rounded font-bold transition-colors">+</button>
           </form>
@@ -87,7 +93,8 @@ export default function TarjetaViaje({ viaje }) {
           <ul className="space-y-2 mb-4 max-h-32 overflow-y-auto pr-1">
             {listaGastos.map((gasto, i) => (
               <li key={i} className="flex justify-between text-sm border-b border-slate-800/50 pb-1">
-                <span className="text-slate-300">{gasto.descripcion}</span>
+                {/* 4. Renderizamos gasto.concepto */}
+                <span className="text-slate-300">{gasto.concepto}</span>
                 <span className="text-red-400 font-medium">-${gasto.monto}</span>
               </li>
             ))}
