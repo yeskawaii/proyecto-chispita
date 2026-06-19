@@ -25,6 +25,10 @@ function App() {
     setViajes([...viajes, viaje]);
   };
 
+  const eliminarViajeLocal = (id) => {
+    setViajes(viajes.filter(v => v.id !== id));
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-cyan-100 via-sky-50 to-emerald-100 text-gray-800 p-6 md:p-10 font-sans selection:bg-teal-500/30">
       <div className="max-w-6xl mx-auto">
@@ -46,7 +50,7 @@ function App() {
         ) : (
           <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {viajes.map(viaje => (
-              <TarjetaViaje key={viaje.id} viaje={viaje} />
+              <TarjetaViaje key={viaje.id} viaje={viaje} onDelete={eliminarViajeLocal} />
             ))}
           </ul>
         )}

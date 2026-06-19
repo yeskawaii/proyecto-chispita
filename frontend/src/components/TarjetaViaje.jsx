@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { getIdeasIA, getGastos, postGasto } from '../services/api';
+import { getIdeasIA, getGastos, postGasto, deleteViaje, deleteGasto } from '../services/api';
 import Itinerario from './Itinerario';
 
-export default function TarjetaViaje({ viaje }) {
+export default function TarjetaViaje({ viaje, onDelete }) {
   const [ideas, setIdeas] = useState('');
   const [cargando, setCargando] = useState(false);
   const [mostrarGastos, setMostrarGastos] = useState(false);
@@ -53,6 +53,24 @@ export default function TarjetaViaje({ viaje }) {
     }
   };
 
+  const borrarViaje = async () => {
+    try {
+      await deleteViaje(viaje.id);
+      if (onDelete) onDelete(viaje.id);
+    } catch (error) {
+      console.error("Error al borrar viaje:", error);
+    }
+  };
+
+  const borrarGasto = async (gastoId) => {
+    try {
+      await deleteGasto(gastoId);
+      setListaGastos(listaGastos.filter(g => g.id !== gastoId));
+    } catch (error) {
+      console.error("Error al borrar gasto:", error);
+    }
+  };
+
   const totalGastado = listaGastos.reduce((total, gasto) => total + gasto.monto, 0);
   const restante = viaje.presupuesto_estimado - totalGastado;
 
@@ -61,11 +79,16 @@ export default function TarjetaViaje({ viaje }) {
       {/* Línea decorativa arriba: tonos caribeños */}
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-teal-400 to-cyan-500 opacity-70 group-hover:opacity-100 transition-opacity"></div>
       
-      <div className="mb-4 pb-3 border-b border-gray-100">
-        <h3 className="text-2xl font-bold text-teal-800">{viaje.titulo}</h3>
-        <p className="text-sm text-gray-500 mt-1">
-          📍 Destino: <span className="text-gray-700 font-medium">{viaje.destino}</span>
-        </p>
+      <div className="mb-4 pb-3 border-b border-gray-100 flex justify-between items-start">
+        <div>
+          <h3 className="text-2xl font-bold text-teal-800">{viaje.titulo}</h3>
+          <p className="text-sm text-gray-500 mt-1">
+            📍 Destino: <span className="text-gray-700 font-medium">{viaje.destino}</span>
+          </p>
+        </div>
+        <button onClick={borrarViaje} className="text-red-400 hover:text-red-600 transition-colors p-1" title="Eliminar viaje">
+          🗑️
+        </button>
       </div>
       
       <div className="space-y-2 text-sm text-gray-600 mb-6 flex-grow">
@@ -102,9 +125,12 @@ export default function TarjetaViaje({ viaje }) {
 
           <ul className="space-y-2 mb-4 max-h-32 overflow-y-auto pr-1">
             {listaGastos.map((gasto, i) => (
-              <li key={i} className="flex justify-between text-sm border-b border-gray-200 pb-1">
+              <li key={gasto.id || i} className="flex justify-between items-center text-sm border-b border-gray-200 pb-1">
                 <span className="text-gray-700">{gasto.concepto}</span>
-                <span className="text-orange-500 font-medium">-${gasto.monto}</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-orange-500 font-medium">-${gasto.monto}</span>
+                  <button onClick={() => borrarGasto(gasto.id)} className="text-red-400 hover:text-red-600 text-xs" title="Eliminar gasto">🗑️</button>
+                </div>
               </li>
             ))}
           </ul>

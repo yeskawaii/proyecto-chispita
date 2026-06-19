@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getItinerario, postItinerario } from '../services/api';
+import { getItinerario, postItinerario, deleteItinerario } from '../services/api';
 
 export default function Itinerario({ viajeId }) {
   const [lista, setLista] = useState([]);
@@ -29,6 +29,15 @@ export default function Itinerario({ viajeId }) {
     }
   };
 
+  const borrarActividad = async (itemId) => {
+    try {
+      await deleteItinerario(viajeId, itemId);
+      setLista(lista.filter(i => i.id !== itemId));
+    } catch (error) {
+      console.error("Error al borrar itinerario:", error);
+    }
+  };
+
   const inputClass = "bg-white border border-gray-300 rounded p-2 text-sm text-gray-700 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 w-full";
 
   return (
@@ -54,10 +63,13 @@ export default function Itinerario({ viajeId }) {
 
       <ul className="space-y-2 max-h-40 overflow-y-auto pr-1">
         {lista.map((item, i) => (
-          <li key={i} className="flex flex-col text-sm border-b border-teal-200/50 pb-2 bg-white/60 p-2 rounded">
-            <div className="flex justify-between font-semibold text-gray-800">
+          <li key={item.id || i} className="flex flex-col text-sm border-b border-teal-200/50 pb-2 bg-white/60 p-2 rounded group">
+            <div className="flex justify-between font-semibold text-gray-800 items-start">
               <span>{item.tipo === 'vuelo' ? '✈️' : item.tipo === 'hotel' ? '🏨' : item.tipo === 'comida' ? '🍽️' : '🏖️'} {item.titulo}</span>
-              <span className="text-teal-600">{item.hora_inicio ? item.hora_inicio.substring(0,5) : 'Todo el día'}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-teal-600">{item.hora_inicio ? item.hora_inicio.substring(0,5) : 'Todo el día'}</span>
+                <button onClick={() => borrarActividad(item.id)} className="text-red-400 hover:text-red-600 text-xs opacity-0 group-hover:opacity-100 transition-opacity" title="Eliminar actividad">🗑️</button>
+              </div>
             </div>
             <span className="text-xs text-gray-500">{item.fecha}</span>
           </li>

@@ -46,6 +46,15 @@ def obtener_viaje_completo(viaje_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Ese viaje no existe, compa.")
     return viaje
 
+@app.delete("/viajes/{viaje_id}", tags=["Viajes"])
+def eliminar_viaje(viaje_id: int, db: Session = Depends(get_db)):
+    viaje = db.query(models.Viaje).filter(models.Viaje.id == viaje_id).first()
+    if not viaje:
+        raise HTTPException(status_code=404, detail="Ese viaje no existe.")
+    db.delete(viaje)
+    db.commit()
+    return {"status": "ok", "mensaje": "Viaje eliminado."}
+
 
 # ==========================================
 # ENDPOINTS: ITINERARIO
@@ -77,6 +86,15 @@ def obtener_itinerario(viaje_id: int, db: Session = Depends(get_db)):
         .order_by(models.Itinerario.fecha.asc(), models.Itinerario.hora_inicio.asc())\
         .all()
 
+@app.delete("/viajes/{viaje_id}/itinerario/{item_id}", tags=["Itinerarios"])
+def eliminar_itinerario(viaje_id: int, item_id: int, db: Session = Depends(get_db)):
+    item = db.query(models.Itinerario).filter(models.Itinerario.id == item_id, models.Itinerario.viaje_id == viaje_id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Ese itinerario no existe.")
+    db.delete(item)
+    db.commit()
+    return {"status": "ok", "mensaje": "Itinerario eliminado."}
+
 # ==========================================
 # ENDPOINTS: GASTOS
 # ==========================================
@@ -101,6 +119,15 @@ def obtener_gastos_viaje(viaje_id: int, db: Session = Depends(get_db)):
     
     gastos = db.query(models.Gasto).filter(models.Gasto.viaje_id == viaje_id).all()
     return gastos
+
+@app.delete("/gastos/{gasto_id}", tags=["Gastos"])
+def eliminar_gasto(gasto_id: int, db: Session = Depends(get_db)):
+    gasto = db.query(models.Gasto).filter(models.Gasto.id == gasto_id).first()
+    if not gasto:
+        raise HTTPException(status_code=404, detail="Ese gasto no existe.")
+    db.delete(gasto)
+    db.commit()
+    return {"status": "ok", "mensaje": "Gasto eliminado."}
 
 # ==========================================
 # ENDPOINTS: IA / IDEAS
