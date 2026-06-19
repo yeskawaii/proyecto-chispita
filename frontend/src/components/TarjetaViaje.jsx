@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { getIdeasIA, getGastos, postGasto } from '../services/api';
+import Itinerario from './Itinerario';
 
 export default function TarjetaViaje({ viaje }) {
   const [ideas, setIdeas] = useState('');
@@ -7,6 +8,7 @@ export default function TarjetaViaje({ viaje }) {
   const [mostrarGastos, setMostrarGastos] = useState(false);
   const [listaGastos, setListaGastos] = useState([]);
   const [nuevoGasto, setNuevoGasto] = useState({ concepto: '', monto: '' });
+  const [mostrarItinerario, setMostrarItinerario] = useState(false);
 
   const traerIdeas = async () => {
     setCargando(true);
@@ -55,63 +57,71 @@ export default function TarjetaViaje({ viaje }) {
   const restante = viaje.presupuesto_estimado - totalGastado;
 
   return (
-    <li className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl hover:shadow-indigo-500/10 transition-all duration-300 hover:-translate-y-1 relative overflow-hidden group flex flex-col">
-      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-emerald-500 opacity-50 group-hover:opacity-100 transition-opacity"></div>
+    <li className="bg-white border border-teal-100 rounded-2xl p-6 shadow-lg hover:shadow-teal-500/20 transition-all duration-300 hover:-translate-y-1 relative overflow-hidden group flex flex-col">
+      {/* Línea decorativa arriba: tonos caribeños */}
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-teal-400 to-cyan-500 opacity-70 group-hover:opacity-100 transition-opacity"></div>
       
-      <h3 className="text-2xl font-bold text-indigo-400 mb-4 pb-3 border-b border-slate-800/60">{viaje.destino}</h3>
+      <div className="mb-4 pb-3 border-b border-gray-100">
+        <h3 className="text-2xl font-bold text-teal-800">{viaje.titulo}</h3>
+        <p className="text-sm text-gray-500 mt-1">
+          📍 Destino: <span className="text-gray-700 font-medium">{viaje.destino}</span>
+        </p>
+      </div>
       
-      <div className="space-y-2 text-sm text-slate-400 mb-6 flex-grow">
-        <p><strong className="text-slate-300">Inicio:</strong> {viaje.fecha_inicio}</p>
-        <p><strong className="text-slate-300">Fin:</strong> {viaje.fecha_fin}</p>
-        <p><strong className="text-slate-300">Presupuesto:</strong> <span className="text-emerald-400 font-semibold">${viaje.presupuesto_estimado} MXN</span></p>
+      <div className="space-y-2 text-sm text-gray-600 mb-6 flex-grow">
+        <p><strong className="text-gray-800">Inicio:</strong> {viaje.fecha_inicio}</p>
+        <p><strong className="text-gray-800">Fin:</strong> {viaje.fecha_fin}</p>
+        <p><strong className="text-gray-800">Presupuesto:</strong> <span className="text-emerald-600 font-semibold">${viaje.presupuesto_estimado} MXN</span></p>
       </div>
       
       <div className="flex gap-3 mt-auto">
-        <button onClick={traerIdeas} disabled={cargando} className="flex-1 py-2 px-3 bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 disabled:bg-slate-800 disabled:text-slate-600 rounded-lg font-semibold transition-colors text-sm">
+        <button onClick={traerIdeas} disabled={cargando} className="flex-1 py-2 px-3 bg-cyan-50 text-cyan-700 hover:bg-cyan-100 disabled:bg-gray-100 disabled:text-gray-400 rounded-lg font-semibold transition-colors text-sm border border-cyan-100">
           {cargando ? 'Pensando...' : '✨ IA Ideas'}
         </button>
-        <button onClick={toggleGastos} className={`flex-1 py-2 px-3 rounded-lg font-semibold transition-colors text-sm ${mostrarGastos ? 'bg-slate-800 text-slate-300' : 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'}`}>
-          {mostrarGastos ? 'Ocultar' : '💸 Gastos'}
+        <button onClick={toggleGastos} className={`flex-1 py-2 px-3 rounded-lg font-semibold transition-colors text-sm border ${mostrarGastos ? 'bg-gray-100 text-gray-600 border-gray-200' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border-emerald-100'}`}>
+          {mostrarGastos ? 'Ocultar Gastos' : '💸 Gastos'}
+        </button>
+        <button onClick={() => setMostrarItinerario(!mostrarItinerario)} className={`flex-1 py-2 px-3 rounded-lg font-semibold transition-colors text-sm border ${mostrarItinerario ? 'bg-gray-100 text-gray-600 border-gray-200' : 'bg-cyan-50 text-cyan-700 hover:bg-cyan-100 border-cyan-100'}`}>
+          {mostrarItinerario ? 'Ocultar Itinerario' : '📅 Itinerario'}
         </button>
       </div>
       
       {ideas && (
-        <div className="mt-5 p-4 bg-indigo-950/30 border border-indigo-900/50 rounded-xl text-sm text-indigo-200">
+        <div className="mt-5 p-4 bg-cyan-50/50 border border-cyan-100 rounded-xl text-sm text-cyan-900">
           <p className="whitespace-pre-wrap">{ideas}</p>
         </div>
       )}
 
       {mostrarGastos && (
-        <div className="mt-5 p-4 bg-slate-950/50 border border-slate-800 rounded-xl">
+        <div className="mt-5 p-4 bg-gray-50 border border-gray-200 rounded-xl">
           <form className="flex gap-2 mb-4" onSubmit={agregarGasto}>
-            {/* 3. Cambiamos el name y value a "concepto" */}
-            <input className="flex-2 bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500 w-full" type="text" name="concepto" placeholder="Concepto" value={nuevoGasto.concepto} onChange={manejarCambioGasto} required />
-            <input className="flex-1 bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500 w-24" type="number" name="monto" placeholder="$" value={nuevoGasto.monto} onChange={manejarCambioGasto} required />
-            <button type="submit" className="bg-emerald-600 hover:bg-emerald-500 text-white px-3 rounded font-bold transition-colors">+</button>
+            <input className="flex-2 bg-white border border-gray-300 rounded p-2 text-sm text-gray-700 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 w-full" type="text" name="concepto" placeholder="Concepto" value={nuevoGasto.concepto} onChange={manejarCambioGasto} required />
+            <input className="flex-1 bg-white border border-gray-300 rounded p-2 text-sm text-gray-700 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 w-24" type="number" name="monto" placeholder="$" value={nuevoGasto.monto} onChange={manejarCambioGasto} required />
+            <button type="submit" className="bg-emerald-500 hover:bg-emerald-600 text-white px-3 rounded font-bold transition-colors shadow-sm">+</button>
           </form>
 
           <ul className="space-y-2 mb-4 max-h-32 overflow-y-auto pr-1">
             {listaGastos.map((gasto, i) => (
-              <li key={i} className="flex justify-between text-sm border-b border-slate-800/50 pb-1">
-                {/* 4. Renderizamos gasto.concepto */}
-                <span className="text-slate-300">{gasto.concepto}</span>
-                <span className="text-red-400 font-medium">-${gasto.monto}</span>
+              <li key={i} className="flex justify-between text-sm border-b border-gray-200 pb-1">
+                <span className="text-gray-700">{gasto.concepto}</span>
+                <span className="text-orange-500 font-medium">-${gasto.monto}</span>
               </li>
             ))}
           </ul>
           
-          <div className="pt-3 border-t border-slate-700/50 text-sm">
+          <div className="pt-3 border-t border-gray-200 text-sm">
             <div className="flex justify-between mb-1">
-              <span className="text-slate-400">Total Gastado:</span>
-              <span className="font-bold text-slate-200">${totalGastado} MXN</span>
+              <span className="text-gray-500">Total Gastado:</span>
+              <span className="font-bold text-gray-800">${totalGastado} MXN</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-400">Restante:</span>
-              <span className={`font-bold ${restante < 0 ? 'text-red-500' : 'text-emerald-400'}`}>${restante} MXN</span>
+              <span className="text-gray-500">Restante:</span>
+              <span className={`font-bold ${restante < 0 ? 'text-red-500' : 'text-emerald-600'}`}>${restante} MXN</span>
             </div>
           </div>
         </div>
       )}
+      {mostrarItinerario && <Itinerario viajeId={viaje.id} />}
     </li>
   );
 }

@@ -35,3 +35,19 @@ export const postGasto = async (viajeId, gasto) => {
   });
   return res.json();
 };
+
+export const getItinerario = async (viajeId) => {
+  const res = await fetch(`${API_URL}/viajes/${viajeId}/itinerario`);
+  if (!res.ok) throw new Error("Error al traer itinerario");
+  return res.json();
+};
+
+export const postItinerario = async (viajeId, item) => {
+  const res = await fetch(`${API_URL}/viajes/${viajeId}/itinerario`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(item),
+  });
+  if (!res.ok) throw new Error("Error al guardar itinerario");
+  return res.json();
+};

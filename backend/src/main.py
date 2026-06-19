@@ -51,18 +51,31 @@ def obtener_viaje_completo(viaje_id: int, db: Session = Depends(get_db)):
 # ENDPOINTS: ITINERARIO
 # ==========================================
 
-@app.post("/itinerarios/", response_model=schemas.ItinerarioResponse, tags=["Itinerarios"])
-def agregar_itinerario(item: schemas.ItinerarioCreate, db: Session = Depends(get_db)):
-    viaje_existe = db.query(models.Viaje).filter(models.Viaje.id == item.viaje_id).first()
-    if not viaje_existe:
-        raise HTTPException(status_code=404, detail="No puedes meter itinerario a un viaje que no existe.")
+@app.post("/viajes/{viaje_id}/itinerario", response_model=schemas.ItinerarioResponse, tags=["Itinerarios"])
+def crear_itinerario(viaje_id: int, itinerario: schemas.ItinerarioCreate, db: Session = Depends(get_db)):
+    viaje = db.query(models.Viaje).filter(models.Viaje.id == viaje_id).first()
+    if not viaje:
+        raise HTTPException(status_code=404, detail="No puedes meterle agenda a un viaje fantasma.")
     
-    nuevo_item = models.Itinerario(**item.model_dump())
+    data = itinerario.model_dump()
+    data["viaje_id"] = viaje_id
+    
+    nuevo_item = models.Itinerario(**data)
     db.add(nuevo_item)
     db.commit()
     db.refresh(nuevo_item)
     return nuevo_item
 
+@app.get("/viajes/{viaje_id}/itinerario", response_model=List[schemas.ItinerarioResponse], tags=["Itinerarios"])
+def obtener_itinerario(viaje_id: int, db: Session = Depends(get_db)):
+    viaje = db.query(models.Viaje).filter(models.Viaje.id == viaje_id).first()
+    if not viaje:
+        raise HTTPException(status_code=404, detail="Ese viaje no existe, compa.")
+        
+    return db.query(models.Itinerario)\
+        .filter(models.Itinerario.viaje_id == viaje_id)\
+        .order_by(models.Itinerario.fecha.asc(), models.Itinerario.hora_inicio.asc())\
+        .all()
 
 # ==========================================
 # ENDPOINTS: GASTOS

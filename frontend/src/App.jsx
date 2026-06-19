@@ -26,10 +26,10 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 p-6 md:p-10 font-sans selection:bg-indigo-500/30">
+    <div className="min-h-screen bg-gradient-to-br from-cyan-100 via-sky-50 to-emerald-100 text-gray-800 p-6 md:p-10 font-sans selection:bg-teal-500/30">
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-4xl md:text-5xl font-black text-center mb-10 tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-emerald-400">
-          Centro de Comando Chispita 🚀
+        <h1 className="text-4xl md:text-5xl font-black text-center mb-10 tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-cyan-600 drop-shadow-sm">
+          Viajes con mi Chispita ✈️🌴
         </h1>
         
         <FormularioViaje onViajeGuardado={agregarNuevoViaje} />
