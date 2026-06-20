@@ -4,6 +4,21 @@ import FormularioViaje from './components/FormularioViaje';
 import TarjetaViaje from './components/TarjetaViaje';
 import SelectorIdentidad from './components/SelectorIdentidad';
 
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding)
+    .replace(/-/g, '+')
+    .replace(/_/g, '/');
+
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
 function App() {
   const [usuarioActivo, setUsuarioActivo] = useState(null);
   const [viajes, setViajes] = useState([]);
@@ -32,15 +47,40 @@ function App() {
   };
 
   const solicitarPermisosNotificacion = async () => {
-    if (!('Notification' in window)) {
+    if (!('Notification' in window) || !('serviceWorker' in navigator)) {
       alert('Tu navegador no soporta notificaciones web.');
       return;
     }
     const permission = await Notification.requestPermission();
     if (permission === 'granted') {
-      new Notification('¡Ahora sí!', {
-        body: 'Las notificaciones ya están jalando al cien en tu dispositivo',
-      });
+      try {
+        const swRegistration = await navigator.serviceWorker.ready;
+        
+        const publicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+        const convertedVapidKey = urlBase64ToUint8Array(publicKey);
+        
+        const subscription = await swRegistration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: convertedVapidKey
+        });
+
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/notificaciones/suscribir`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ...subscription.toJSON(),
+            usuario: usuarioActivo
+          })
+        });
+
+        if (res.ok) {
+          alert('¡Suscripción exitosa a notificaciones push! 🎉');
+        } else {
+          console.error('Error al suscribir en backend:', await res.text());
+        }
+      } catch (error) {
+        console.error('Falló la suscripción push:', error);
+      }
     } else {
       alert('Permiso denegado para notificaciones.');
     }

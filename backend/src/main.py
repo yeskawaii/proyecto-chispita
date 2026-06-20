@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 from pydantic import BaseModel
 import os
 
@@ -172,6 +172,7 @@ class PushKeys(BaseModel):
 class PushSubscription(BaseModel):
     endpoint: str
     keys: PushKeys
+    usuario: Optional[str] = None
 
 # Almacenamiento en memoria temporal para las suscripciones
 suscripciones_guardadas = []
