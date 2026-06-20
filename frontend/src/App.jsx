@@ -3,6 +3,7 @@ import { getViajes } from './services/api';
 import FormularioViaje from './components/FormularioViaje';
 import TarjetaViaje from './components/TarjetaViaje';
 import SelectorIdentidad from './components/SelectorIdentidad';
+import EstadoAnimo from './components/EstadoAnimo';
 
 function urlBase64ToUint8Array(base64String) {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -94,12 +95,14 @@ function App() {
           Viajes con mi Chispita ✈️🌴
         </h1>
 
-        <div className="flex justify-center mb-10">
+        <div className="flex justify-center mb-8">
           <button onClick={solicitarPermisosNotificacion} className="bg-teal-100 text-teal-800 px-4 py-2 rounded-full font-semibold text-sm hover:bg-teal-200 transition-colors shadow-sm flex items-center gap-2">
             🔔 Activar Notificaciones
           </button>
         </div>
 
+        <EstadoAnimo usuarioActivo={usuarioActivo} />
+        
         <FormularioViaje onViajeGuardado={agregarNuevoViaje} />
 
         {cargando ? (

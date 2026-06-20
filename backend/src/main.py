@@ -208,3 +208,48 @@ def probar_notificacion():
     except WebPushException as ex:
         print("Error enviando Web Push:", ex)
         raise HTTPException(status_code=500, detail=str(ex))
+
+class EstadoAnimoRequest(BaseModel):
+    usuario: str
+    estado: str
+
+@app.post("/api/estado-animo", tags=["Notificaciones"])
+def enviar_estado_animo(req: EstadoAnimoRequest):
+    if not webpush:
+        raise HTTPException(status_code=500, detail="pywebpush no está instalado.")
+    
+    private_key = os.getenv("VAPID_PRIVATE_KEY")
+    if not private_key:
+        raise HTTPException(status_code=500, detail="Falta configurar VAPID_PRIVATE_KEY en el .env")
+
+    # Identificamos la pareja
+    target_user = "Chispita" if req.usuario == "Yescas" else "Yescas"
+
+    # Buscamos la última suscripción de esa pareja
+    sub_target = None
+    for sub in reversed(suscripciones_guardadas):
+        if sub.get("usuario") == target_user:
+            sub_target = sub
+            break
+            
+    if not sub_target:
+        raise HTTPException(status_code=404, detail=f"Aún no hay suscripción activa para {target_user}.")
+
+    try:
+        import json
+        payload = json.dumps({
+            "title": f"Aviso de {req.usuario}",
+            "body": f"Me siento {req.estado} con el viaje"
+        })
+        webpush(
+            subscription_info=sub_target,
+            data=payload,
+            vapid_private_key=private_key,
+            vapid_claims={
+                "sub": "mailto:admin@proyecto-chispita.com"
+            }
+        )
+        return {"status": "ok", "mensaje": "Estado de ánimo enviado exitosamente."}
+    except WebPushException as ex:
+        print("Error enviando estado de ánimo (Web Push):", ex)
+        raise HTTPException(status_code=500, detail=str(ex))
