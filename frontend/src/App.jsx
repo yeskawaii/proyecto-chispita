@@ -28,20 +28,53 @@ function App() {
   const [cargando, setCargando] = useState(true);
   const [errorConexion, setErrorConexion] = useState(false);
 
-  const APP_VERSION = '1.0.1';
-
   useEffect(() => {
-    const savedVersion = localStorage.getItem('app_version');
-    if (savedVersion !== APP_VERSION) {
-      // Guardamos la sesión antes de purgar
-      const user = localStorage.getItem('usuarioActivo');
-      
-      localStorage.clear();
-      localStorage.setItem('app_version', APP_VERSION);
-      if (user) localStorage.setItem('usuarioActivo', user);
-      
-      window.location.reload(true);
-    }
+    const checkUpdate = async () => {
+      try {
+        // Cache busting: obligar a ir a la red saltándose el Service Worker
+        const res = await fetch(`/version.json?t=${new Date().getTime()}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        
+        const savedVersion = localStorage.getItem('app_version');
+        
+        if (!savedVersion) {
+          localStorage.setItem('app_version', data.version);
+          return;
+        }
+
+        if (savedVersion !== data.version) {
+          console.log(`Actualizando versión: ${savedVersion} -> ${data.version}`);
+          const user = localStorage.getItem('usuarioActivo');
+          
+          localStorage.clear();
+          localStorage.setItem('app_version', data.version);
+          if (user) localStorage.setItem('usuarioActivo', user);
+          
+          // Desregistrar Service Workers para purgar la caché dura de iOS
+          if ('serviceWorker' in navigator) {
+            const regs = await navigator.serviceWorker.getRegistrations();
+            for (let reg of regs) {
+              await reg.unregister();
+            }
+          }
+          
+          window.location.reload(true);
+        }
+      } catch (err) {
+        console.error("Error verificando versión:", err);
+      }
+    };
+
+    checkUpdate();
+
+    // Revisar actualizaciones al volver a abrir la app (en iOS / Android)
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') checkUpdate();
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
   }, []);
 
   const handleSetUsuario = (usuario) => {
