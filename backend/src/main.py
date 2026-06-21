@@ -52,7 +52,7 @@ def obtener_viajes(db: Session = Depends(get_db)):
 def obtener_viaje_completo(viaje_id: int, db: Session = Depends(get_db)):
     viaje = db.query(models.Viaje).filter(models.Viaje.id == viaje_id).first()
     if not viaje:
-        raise HTTPException(status_code=404, detail="Ese viaje no existe, compa.")
+        raise HTTPException(status_code=404, detail="Ese viaje no existe.")
     return viaje
 
 @app.delete("/viajes/{viaje_id}", tags=["Viajes"])
@@ -88,7 +88,7 @@ def crear_itinerario(viaje_id: int, itinerario: schemas.ItinerarioCreate, db: Se
 def obtener_itinerario(viaje_id: int, db: Session = Depends(get_db)):
     viaje = db.query(models.Viaje).filter(models.Viaje.id == viaje_id).first()
     if not viaje:
-        raise HTTPException(status_code=404, detail="Ese viaje no existe, compa.")
+        raise HTTPException(status_code=404, detail="Ese viaje no existe.")
         
     return db.query(models.Itinerario)\
         .filter(models.Itinerario.viaje_id == viaje_id)\
@@ -238,8 +238,8 @@ def enviar_estado_animo(req: EstadoAnimoRequest):
     try:
         import json
         payload = json.dumps({
-            "title": f"Aviso de {req.usuario}",
-            "body": f"Me siento {req.estado} con el viaje"
+            "title": f"Mensaje de {req.usuario}",
+            "body": f"{req.estado}"
         })
         webpush(
             subscription_info=sub_target,
