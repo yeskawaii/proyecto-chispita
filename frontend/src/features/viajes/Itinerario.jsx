@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getItinerario, postItinerario, deleteItinerario } from '../services/api';
+import { getItinerario, postItinerario, deleteItinerario } from '../../services/api';
 
 export default function Itinerario({ viajeId }) {
   const [lista, setLista] = useState([]);

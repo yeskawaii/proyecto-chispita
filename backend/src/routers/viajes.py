@@ -1,0 +1,122 @@
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from typing import List
+
+from src.core.db import get_db
+from src.models import viajes as models
+from src.schemas import viajes as schemas
+from src.services.ai import generar_ideas_viaje
+
+router = APIRouter()
+
+@router.post("/viajes/", response_model=schemas.ViajeResponse, tags=["Viajes"])
+def crear_viaje(viaje: schemas.ViajeCreate, db: Session = Depends(get_db)):
+    nuevo_viaje = models.Viaje(**viaje.model_dump())
+    db.add(nuevo_viaje)
+    db.commit()
+    db.refresh(nuevo_viaje)
+    return nuevo_viaje
+
+@router.get("/viajes/", response_model=List[schemas.ViajeResponse], tags=["Viajes"])
+def obtener_viajes(db: Session = Depends(get_db)):
+    return db.query(models.Viaje).all()
+
+@router.get("/viajes/{viaje_id}", response_model=schemas.ViajeResponseFull, tags=["Viajes"])
+def obtener_viaje_completo(viaje_id: int, db: Session = Depends(get_db)):
+    viaje = db.query(models.Viaje).filter(models.Viaje.id == viaje_id).first()
+    if not viaje:
+        raise HTTPException(status_code=404, detail="Ese viaje no existe.")
+    return viaje
+
+@router.delete("/viajes/{viaje_id}", tags=["Viajes"])
+def eliminar_viaje(viaje_id: int, db: Session = Depends(get_db)):
+    viaje = db.query(models.Viaje).filter(models.Viaje.id == viaje_id).first()
+    if not viaje:
+        raise HTTPException(status_code=404, detail="Ese viaje no existe.")
+    db.delete(viaje)
+    db.commit()
+    return {"status": "ok", "mensaje": "Viaje eliminado."}
+
+@router.post("/viajes/{viaje_id}/itinerario", response_model=schemas.ItinerarioResponse, tags=["Itinerarios"])
+def crear_itinerario(viaje_id: int, itinerario: schemas.ItinerarioCreate, db: Session = Depends(get_db)):
+    viaje = db.query(models.Viaje).filter(models.Viaje.id == viaje_id).first()
+    if not viaje:
+        raise HTTPException(status_code=404, detail="No puedes meterle agenda a un viaje fantasma.")
+    
+    data = itinerario.model_dump()
+    data["viaje_id"] = viaje_id
+    
+    nuevo_item = models.Itinerario(**data)
+    db.add(nuevo_item)
+    db.commit()
+    db.refresh(nuevo_item)
+    return nuevo_item
+
+@router.get("/viajes/{viaje_id}/itinerario", response_model=List[schemas.ItinerarioResponse], tags=["Itinerarios"])
+def obtener_itinerario(viaje_id: int, db: Session = Depends(get_db)):
+    viaje = db.query(models.Viaje).filter(models.Viaje.id == viaje_id).first()
+    if not viaje:
+        raise HTTPException(status_code=404, detail="Ese viaje no existe.")
+        
+    return db.query(models.Itinerario)\
+        .filter(models.Itinerario.viaje_id == viaje_id)\
+        .order_by(models.Itinerario.fecha.asc(), models.Itinerario.hora_inicio.asc())\
+        .all()
+
+@router.delete("/viajes/{viaje_id}/itinerario/{item_id}", tags=["Itinerarios"])
+def eliminar_itinerario(viaje_id: int, item_id: int, db: Session = Depends(get_db)):
+    item = db.query(models.Itinerario).filter(models.Itinerario.id == item_id, models.Itinerario.viaje_id == viaje_id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Ese itinerario no existe.")
+    db.delete(item)
+    db.commit()
+    return {"status": "ok", "mensaje": "Itinerario eliminado."}
+
+@router.post("/gastos/", response_model=schemas.GastoResponse, tags=["Gastos"])
+def agregar_gasto(gasto: schemas.GastoCreate, db: Session = Depends(get_db)):
+    viaje_existe = db.query(models.Viaje).filter(models.Viaje.id == gasto.viaje_id).first()
+    if not viaje_existe:
+        raise HTTPException(status_code=404, detail="No puedes registrar gastos de un viaje fantasma.")
+    
+    nuevo_gasto = models.Gasto(**gasto.model_dump())
+    db.add(nuevo_gasto)
+    db.commit()
+    db.refresh(nuevo_gasto)
+    return nuevo_gasto
+
+@router.get("/viajes/{viaje_id}/gastos/", response_model=List[schemas.GastoResponse], tags=["Gastos"])
+def obtener_gastos_viaje(viaje_id: int, db: Session = Depends(get_db)):
+    viaje = db.query(models.Viaje).filter(models.Viaje.id == viaje_id).first()
+    if not viaje:
+        raise HTTPException(status_code=404, detail="Ese viaje no existe.")
+    
+    gastos = db.query(models.Gasto).filter(models.Gasto.viaje_id == viaje_id).all()
+    return gastos
+
+@router.delete("/gastos/{gasto_id}", tags=["Gastos"])
+def eliminar_gasto(gasto_id: int, db: Session = Depends(get_db)):
+    gasto = db.query(models.Gasto).filter(models.Gasto.id == gasto_id).first()
+    if not gasto:
+        raise HTTPException(status_code=404, detail="Ese gasto no existe.")
+    db.delete(gasto)
+    db.commit()
+    return {"status": "ok", "mensaje": "Gasto eliminado."}
+
+@router.get("/viajes/{viaje_id}/ideas", tags=["IA"])
+def obtener_ideas_con_ia(viaje_id: int, db: Session = Depends(get_db)):
+    viaje = db.query(models.Viaje).filter(models.Viaje.id == viaje_id).first()
+    if not viaje:
+        raise HTTPException(status_code=404, detail="Viaje no encontrado.")
+
+    dias = (viaje.fecha_fin - viaje.fecha_inicio).days
+    if dias <= 0:
+        dias = 1
+
+    ideas = generar_ideas_viaje(viaje.destino, dias, viaje.presupuesto_estimado)
+
+    return {
+        "destino": viaje.destino,
+        "dias": dias,
+        "presupuesto": viaje.presupuesto_estimado,
+        "ideas_gemini": ideas
+    }

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { getIdeasIA, getGastos, postGasto, deleteViaje, deleteGasto } from '../services/api';
+import { getIdeasIA, getGastos, postGasto, deleteViaje, deleteGasto } from '../../services/api';
 import Itinerario from './Itinerario';
 
 export default function TarjetaViaje({ viaje, onDelete }) {
