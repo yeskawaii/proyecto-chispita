@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { postViaje } from '../services/api';
+import { postViaje } from '../../services/api';
 
 export default function FormularioViaje({ onViajeGuardado }) {
   const [nuevoViaje, setNuevoViaje] = useState({

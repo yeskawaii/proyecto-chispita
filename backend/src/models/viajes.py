@@ -21,7 +21,7 @@ class Itinerario(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     viaje_id = Column(Integer, ForeignKey("viajes.id"))
-    tipo = Column(String) # Ej: vuelo, hotel, tour
+    tipo = Column(String)
     titulo = Column(String)
     fecha = Column(Date)
     hora_inicio = Column(Time, nullable=True)
@@ -38,10 +38,3 @@ class Gasto(Base):
     fecha_pago = Column(Date)
 
     viaje = relationship("Viaje", back_populates="gastos")
-
-class Tarea(Base):
-    __tablename__ = "tareas"
-
-    id = Column(Integer, primary_key=True, index=True)
-    texto = Column(String, index=True)
-    completada = Column(Boolean, default=False)
