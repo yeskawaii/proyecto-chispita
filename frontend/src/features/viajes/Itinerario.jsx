@@ -38,13 +38,13 @@ export default function Itinerario({ viajeId }) {
     }
   };
 
-  const inputClass = "bg-white border border-gray-300 rounded p-2 text-sm text-gray-700 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 w-full";
+  const inputClass = "bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400 w-full transition-all";
 
   return (
-    <div className="mt-5 p-4 bg-teal-50/50 border border-teal-100 rounded-xl">
-      <h4 className="font-bold text-teal-800 mb-3 flex items-center gap-2">📅 Itinerario del Viaje</h4>
+    <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4">
+      <h4 className="font-bold text-slate-700 mb-3 text-sm uppercase tracking-wider">Itinerario del Viaje</h4>
       
-      <form className="flex flex-col gap-2 mb-4" onSubmit={guardarActividad}>
+      <form className="flex flex-col gap-2 mb-5" onSubmit={guardarActividad}>
         <div className="flex gap-2">
           <select name="tipo" value={nuevoItem.tipo} onChange={manejarCambio} className={`${inputClass} flex-1`} required>
             <option value="vuelo">✈️ Vuelo</option>
@@ -53,25 +53,27 @@ export default function Itinerario({ viajeId }) {
             <option value="actividad">🏖️ Actividad</option>
           </select>
           <input type="date" name="fecha" value={nuevoItem.fecha} onChange={manejarCambio} className={`${inputClass} flex-1`} required />
-          <input type="time" name="hora_inicio" value={nuevoItem.hora_inicio} onChange={manejarCambio} className={`${inputClass} w-24`} />
+          <input type="time" name="hora_inicio" value={nuevoItem.hora_inicio} onChange={manejarCambio} className={`${inputClass} w-[90px]`} />
         </div>
         <div className="flex gap-2">
-          <input type="text" name="titulo" placeholder="¿Qué vamos a hacer?" value={nuevoItem.titulo} onChange={manejarCambio} className={`${inputClass} flex-2`} required />
-          <button type="submit" className="bg-teal-500 hover:bg-teal-600 text-white px-4 rounded font-bold transition-colors shadow-sm">Add</button>
+          <input type="text" name="titulo" placeholder="¿Qué vamos a hacer?" value={nuevoItem.titulo} onChange={manejarCambio} className={`${inputClass} flex-[2]`} required />
+          <button type="submit" className="bg-teal-600 active:bg-teal-700 text-white px-5 rounded-xl font-bold shadow-sm flex items-center justify-center transition-transform active:scale-95">+</button>
         </div>
       </form>
 
-      <ul className="space-y-2 max-h-40 overflow-y-auto pr-1">
+      <ul className="space-y-3 max-h-48 overflow-y-auto pr-1">
         {lista.map((item, i) => (
-          <li key={item.id || i} className="flex flex-col text-sm border-b border-teal-200/50 pb-2 bg-white/60 p-2 rounded group">
-            <div className="flex justify-between font-semibold text-gray-800 items-start">
-              <span>{item.tipo === 'vuelo' ? '✈️' : item.tipo === 'hotel' ? '🏨' : item.tipo === 'comida' ? '🍽️' : '🏖️'} {item.titulo}</span>
-              <div className="flex items-center gap-2">
-                <span className="text-teal-600">{item.hora_inicio ? item.hora_inicio.substring(0,5) : 'Todo el día'}</span>
-                <button onClick={() => borrarActividad(item.id)} className="text-red-400 hover:text-red-600 text-xs opacity-0 group-hover:opacity-100 transition-opacity" title="Eliminar actividad">🗑️</button>
+          <li key={item.id || i} className="flex flex-col border border-slate-100 bg-white p-3 rounded-xl shadow-sm">
+            <div className="flex justify-between items-start">
+              <span className="font-bold text-slate-700 text-[15px]">{item.tipo === 'vuelo' ? '✈️' : item.tipo === 'hotel' ? '🏨' : item.tipo === 'comida' ? '🍽️' : '🏖️'} {item.titulo}</span>
+              <div className="flex items-center gap-3">
+                <span className="text-teal-600 font-bold text-sm bg-teal-50 px-2 py-0.5 rounded-md">{item.hora_inicio ? item.hora_inicio.substring(0,5) : 'Todo el día'}</span>
+                <button onClick={() => borrarActividad(item.id)} className="text-slate-300 hover:text-red-500 active:scale-90 transition-transform p-1" title="Eliminar actividad">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                </button>
               </div>
             </div>
-            <span className="text-xs text-gray-500">{item.fecha}</span>
+            <span className="text-xs font-medium text-slate-400 mt-1">{item.fecha}</span>
           </li>
         ))}
       </ul>

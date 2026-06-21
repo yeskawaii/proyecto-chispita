@@ -22,39 +22,51 @@ export default function FormularioViaje({ onViajeGuardado }) {
     }
   };
 
-  // Inputs claros con bordes sutiles y foco color verde agua (teal)
-  const inputClass = "w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all text-sm";
+  const cerrarModal = () => document.getElementById('modal-nuevo-viaje').close();
+
+  const inputClass = "w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:bg-white transition-all text-[15px]";
 
   return (
-    // Contenedor blanco semi-transparente para que se fusione con el fondo degradado
-    <form className="bg-white/70 backdrop-blur-md border border-teal-100 p-6 md:p-8 rounded-3xl shadow-xl max-w-2xl mx-auto mb-14 flex flex-col gap-5" onSubmit={guardarViaje}>
-      <div>
-        <h2 className="text-2xl font-bold text-teal-900 mb-1">Planifica tu Próxima Aventura 🗺️</h2>
-        <p className="text-xs text-teal-700/70">Arma las maletas y empieza a trazar el mapa.</p>
+    <dialog 
+      id="modal-nuevo-viaje" 
+      className="backdrop:bg-slate-900/60 p-0 m-0 mt-auto fixed inset-x-0 bottom-0 max-w-md w-full mx-auto rounded-t-[2rem] bg-white shadow-2xl transition-transform ease-out duration-300 open:animate-in open:slide-in-from-bottom-full"
+    >
+      <div className="p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] flex flex-col gap-4">
+        <div className="flex justify-between items-center mb-2">
+          <div>
+            <h2 className="text-xl font-black text-slate-800">Nuevo Viaje 🗺️</h2>
+            <p className="text-sm text-slate-500 font-medium">¿A dónde vamos?</p>
+          </div>
+          <button type="button" onClick={cerrarModal} className="w-9 h-9 flex items-center justify-center bg-slate-100 rounded-full text-slate-500 hover:bg-slate-200 active:scale-90 transition-transform">
+             ✕
+          </button>
+        </div>
+        
+        <form className="flex flex-col gap-4" onSubmit={(e) => { guardarViaje(e); cerrarModal(); }}>
+          <input className={inputClass} type="text" name="titulo" placeholder="Título (ej. Escapada Romántica)" value={nuevoViaje.titulo} onChange={manejarCambio} required />
+          <input className={inputClass} type="text" name="destino" placeholder="Destino (ej. Bora Bora)" value={nuevoViaje.destino} onChange={manejarCambio} required />
+          
+          <div className="flex gap-4">
+             <div className="flex-1 flex flex-col gap-1.5">
+               <label className="text-[13px] font-bold text-slate-500 px-1 uppercase tracking-wider">Salida</label>
+               <input className={inputClass} type="date" name="fecha_inicio" value={nuevoViaje.fecha_inicio} onChange={manejarCambio} required />
+             </div>
+             
+             <div className="flex-1 flex flex-col gap-1.5">
+               <label className="text-[13px] font-bold text-slate-500 px-1 uppercase tracking-wider">Regreso</label>
+               <input className={inputClass} type="date" name="fecha_fin" value={nuevoViaje.fecha_fin} onChange={manejarCambio} required />
+             </div>
+          </div>
+          
+          <div className="flex flex-col gap-1.5 mt-2">
+            <input className={inputClass} type="number" name="presupuesto_estimado" placeholder="Presupuesto ($ MXN)" value={nuevoViaje.presupuesto_estimado} onChange={manejarCambio} required />
+          </div>
+          
+          <button type="submit" className="w-full mt-4 bg-teal-600 active:bg-teal-700 text-white font-bold py-4 rounded-2xl active:scale-[0.98] transition-all shadow-md shadow-teal-600/20 text-[15px]">
+            Crear Itinerario
+          </button>
+        </form>
       </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <input className={`${inputClass} md:col-span-2`} type="text" name="titulo" placeholder="Título (ej. Escapada Romántica)" value={nuevoViaje.titulo} onChange={manejarCambio} required />
-        <input className={`${inputClass} md:col-span-2`} type="text" name="destino" placeholder="Destino (ej. Bora Bora)" value={nuevoViaje.destino} onChange={manejarCambio} required />
-        
-        <div className="flex flex-col gap-1">
-          <label className="text-xs font-semibold text-teal-800 px-1">Fecha de salida</label>
-          <input className={inputClass} type="date" name="fecha_inicio" value={nuevoViaje.fecha_inicio} onChange={manejarCambio} required />
-        </div>
-        
-        <div className="flex flex-col gap-1">
-          <label className="text-xs font-semibold text-teal-800 px-1">Fecha de regreso</label>
-          <input className={inputClass} type="date" name="fecha_fin" value={nuevoViaje.fecha_fin} onChange={manejarCambio} required />
-        </div>
-        
-        <div className="md:col-span-2 flex flex-col gap-1">
-          <input className={inputClass} type="number" name="presupuesto_estimado" placeholder="Presupuesto Inicial ($ MXN)" value={nuevoViaje.presupuesto_estimado} onChange={manejarCambio} required />
-        </div>
-      </div>
-      
-      <button type="submit" className="w-full mt-2 bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 text-white font-bold py-3 px-4 rounded-xl shadow-md hover:shadow-lg hover:shadow-teal-500/20 transition-all duration-300 transform hover:-translate-y-0.5">
-        Crear Itinerario de Viaje ✈️
-      </button>
-    </form>
+    </dialog>
   );
 }

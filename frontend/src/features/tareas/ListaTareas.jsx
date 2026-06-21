@@ -68,54 +68,58 @@ export default function ListaTareas() {
   };
 
   return (
-    <div className="bg-white/90 backdrop-blur-md rounded-2xl p-6 shadow-md mb-10 max-w-2xl mx-auto border border-teal-100">
-      <h2 className="text-xl font-bold text-teal-800 mb-4 flex items-center gap-2">
-        <span>📝</span> Tareas Compartidas
-      </h2>
+    <div className="bg-white rounded-3xl p-5 shadow-sm border border-slate-100 mb-6">
+      <div className="flex items-center justify-between mb-6">
+         <h2 className="text-xl font-black text-slate-800 tracking-tight">Checklist</h2>
+         <span className="bg-teal-100 text-teal-800 text-xs font-bold px-3 py-1 rounded-full">{tareas.length} tareas</span>
+      </div>
       
       <form onSubmit={agregarTarea} className="flex gap-2 mb-6">
         <input
           type="text"
-          placeholder="Ej. Comprar bloqueador..."
+          placeholder="Añadir nueva tarea..."
           value={nuevoTexto}
           onChange={(e) => setNuevoTexto(e.target.value)}
-          className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all"
+          className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 focus:bg-white transition-all"
         />
         <button
           type="submit"
           disabled={!nuevoTexto.trim()}
-          className="bg-teal-600 hover:bg-teal-700 text-white px-5 py-2 rounded-xl font-medium transition-colors disabled:opacity-50 shadow-sm"
+          className="bg-teal-600 hover:bg-teal-700 text-white w-12 h-12 rounded-2xl flex items-center justify-center transition-transform active:scale-90 disabled:opacity-50"
         >
-          Agregar
+          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4"/></svg>
         </button>
       </form>
 
       <div className="space-y-3">
         {tareas.length === 0 ? (
-          <p className="text-center text-slate-400 py-4 italic text-sm">No hay tareas pendientes. ¡Todo listo! ✨</p>
+          <div className="text-center py-10 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+             <p className="text-4xl mb-2">✨</p>
+             <p className="text-slate-500 text-sm font-medium">Lista vacía. ¡Todo al día!</p>
+          </div>
         ) : (
           tareas.map(tarea => (
-            <div key={tarea.id} className={`flex items-center justify-between p-3 rounded-xl border transition-all ${tarea.completada ? 'bg-slate-50 border-slate-100' : 'bg-white border-slate-200 shadow-sm hover:border-teal-300'}`}>
-              <label className="flex items-center gap-3 cursor-pointer flex-1">
-                <div className="relative flex items-center">
+            <div key={tarea.id} className={`flex items-center justify-between p-4 rounded-2xl border transition-all duration-300 ${tarea.completada ? 'bg-slate-50/50 border-transparent opacity-60' : 'bg-white border-slate-100 shadow-sm'}`}>
+              <label className="flex items-center gap-4 cursor-pointer flex-1 select-none">
+                <div className="relative flex items-center justify-center">
                   <input
                     type="checkbox"
                     checked={tarea.completada}
                     onChange={() => toggleCompletada(tarea.id, tarea.completada)}
-                    className="peer h-5 w-5 cursor-pointer appearance-none rounded border-2 border-slate-300 checked:border-teal-500 checked:bg-teal-500 transition-all"
+                    className="peer w-7 h-7 cursor-pointer appearance-none rounded-full border-2 border-slate-200 checked:border-teal-500 checked:bg-teal-500 transition-all"
                   />
-                  <svg className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none opacity-0 peer-checked:opacity-100 text-white" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <svg className="absolute w-4 h-4 pointer-events-none opacity-0 peer-checked:opacity-100 text-white" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="3 8 7 12 13 4"></polyline>
                   </svg>
                 </div>
-                <span className={`text-slate-700 font-medium ${tarea.completada ? 'line-through text-slate-400' : ''}`}>
+                <span className={`text-[15px] font-medium leading-tight transition-all duration-300 ${tarea.completada ? 'line-through text-slate-400' : 'text-slate-700'}`}>
                   {tarea.texto}
                 </span>
               </label>
               
               <button
                 onClick={() => eliminarTarea(tarea.id)}
-                className="text-slate-400 hover:text-red-500 p-2 rounded-lg hover:bg-red-50 transition-colors ml-4"
+                className="text-slate-300 hover:text-red-500 p-2 ml-2 transition-colors"
                 title="Eliminar tarea"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

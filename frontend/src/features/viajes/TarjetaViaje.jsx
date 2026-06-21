@@ -75,82 +75,89 @@ export default function TarjetaViaje({ viaje, onDelete }) {
   const restante = viaje.presupuesto_estimado - totalGastado;
 
   return (
-    <li className="bg-white border border-teal-100 rounded-2xl p-6 shadow-lg hover:shadow-teal-500/20 transition-all duration-300 hover:-translate-y-1 relative overflow-hidden group flex flex-col">
-      {/* Línea decorativa arriba: tonos caribeños */}
-      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-teal-400 to-cyan-500 opacity-70 group-hover:opacity-100 transition-opacity"></div>
-
-      <div className="mb-4 pb-3 border-b border-gray-100 flex justify-between items-start">
+    <div className="bg-white rounded-[2rem] p-5 shadow-sm border border-slate-100 relative overflow-hidden flex flex-col mb-4">
+      <div className="flex justify-between items-start mb-3">
         <div>
-          <h3 className="text-2xl font-bold text-teal-800">{viaje.titulo}</h3>
-          <p className="text-sm text-gray-500 mt-1">
-            📍 Destino: <span className="text-gray-700 font-medium">{viaje.destino}</span>
+          <h3 className="text-xl font-black text-slate-800 leading-tight mb-1">{viaje.titulo}</h3>
+          <p className="text-sm font-medium text-slate-500 flex items-center gap-1">
+            <span className="text-teal-500">📍</span> {viaje.destino}
           </p>
         </div>
-        <button onClick={borrarViaje} className="text-red-400 hover:text-red-600 transition-colors p-1" title="Eliminar viaje">
-          🗑️
+        <button onClick={borrarViaje} className="text-slate-300 hover:text-red-500 transition-colors p-2 -mr-2 -mt-2 active:scale-90" title="Eliminar viaje">
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
         </button>
       </div>
 
-      <div className="space-y-2 text-sm text-gray-600 mb-6 flex-grow">
-        <p><strong className="text-gray-800">Inicio:</strong> {viaje.fecha_inicio}</p>
-        <p><strong className="text-gray-800">Fin:</strong> {viaje.fecha_fin}</p>
-        <p><strong className="text-gray-800">Presupuesto:</strong> <span className="text-emerald-600 font-semibold">${viaje.presupuesto_estimado} MXN</span></p>
+      <div className="flex bg-slate-50 rounded-2xl p-3 mb-5">
+         <div className="flex-1 border-r border-slate-200">
+            <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-0.5">Fechas</p>
+            <p className="text-xs font-semibold text-slate-700">{viaje.fecha_inicio.slice(5)} al {viaje.fecha_fin.slice(5)}</p>
+         </div>
+         <div className="flex-1 pl-3">
+            <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-0.5">Presupuesto</p>
+            <p className="text-xs font-bold text-teal-600">${viaje.presupuesto_estimado}</p>
+         </div>
       </div>
 
-      <div className="flex gap-3 mt-auto">
-        <button onClick={traerIdeas} disabled={cargando} className="flex-1 py-2 px-3 bg-cyan-50 text-cyan-700 hover:bg-cyan-100 disabled:bg-gray-100 disabled:text-gray-400 rounded-lg font-semibold transition-colors text-sm border border-cyan-100">
-          {cargando ? 'Pensando...' : '✨ IA Ideas'}
+      <div className="grid grid-cols-3 gap-2 mt-auto">
+        <button onClick={traerIdeas} disabled={cargando} className="flex flex-col items-center justify-center py-3 bg-white border border-slate-100 hover:bg-slate-50 active:bg-slate-100 rounded-2xl font-semibold transition-all text-xs text-slate-600 shadow-sm disabled:opacity-50">
+          <span className="text-lg mb-1">{cargando ? '⏳' : '✨'}</span>
+          <span>Ideas</span>
         </button>
-        <button onClick={toggleGastos} className={`flex-1 py-2 px-3 rounded-lg font-semibold transition-colors text-sm border ${mostrarGastos ? 'bg-gray-100 text-gray-600 border-gray-200' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border-emerald-100'}`}>
-          {mostrarGastos ? 'Ocultar Gastos' : '💸 Gastos'}
+        <button onClick={toggleGastos} className={`flex flex-col items-center justify-center py-3 border rounded-2xl font-semibold transition-all text-xs shadow-sm ${mostrarGastos ? 'bg-teal-50 border-teal-200 text-teal-700' : 'bg-white border-slate-100 text-slate-600 hover:bg-slate-50'}`}>
+          <span className="text-lg mb-1">💸</span>
+          <span>Gastos</span>
         </button>
-        <button onClick={() => setMostrarItinerario(!mostrarItinerario)} className={`flex-1 py-2 px-3 rounded-lg font-semibold transition-colors text-sm border ${mostrarItinerario ? 'bg-gray-100 text-gray-600 border-gray-200' : 'bg-cyan-50 text-cyan-700 hover:bg-cyan-100 border-cyan-100'}`}>
-          {mostrarItinerario ? 'Ocultar Itinerario' : '📅 Itinerario'}
+        <button onClick={() => setMostrarItinerario(!mostrarItinerario)} className={`flex flex-col items-center justify-center py-3 border rounded-2xl font-semibold transition-all text-xs shadow-sm ${mostrarItinerario ? 'bg-teal-50 border-teal-200 text-teal-700' : 'bg-white border-slate-100 text-slate-600 hover:bg-slate-50'}`}>
+          <span className="text-lg mb-1">📅</span>
+          <span>Ruta</span>
         </button>
       </div>
 
       {ideas && (
-        <div className="mt-5 p-4 bg-cyan-50/50 border border-cyan-100 rounded-xl text-sm text-cyan-900 relative">
-          <button onClick={() => setIdeas('')} className="absolute top-2 right-2 text-cyan-500 hover:text-cyan-800 transition-colors text-xs" title="Cerrar ideas">
-            ❌
+        <div className="mt-4 p-4 bg-teal-50 border border-teal-100 rounded-2xl text-sm text-teal-900 relative animate-in fade-in slide-in-from-top-2">
+          <button onClick={() => setIdeas('')} className="absolute top-3 right-3 text-teal-400 hover:text-teal-700 bg-white rounded-full w-6 h-6 flex items-center justify-center shadow-sm" title="Cerrar">
+             ✕
           </button>
-          <p className="whitespace-pre-wrap mt-2">{ideas}</p>
+          <p className="whitespace-pre-wrap mt-2 font-medium leading-relaxed">{ideas}</p>
         </div>
       )}
 
       {mostrarGastos && (
-        <div className="mt-5 p-4 bg-gray-50 border border-gray-200 rounded-xl">
+        <div className="mt-4 p-4 bg-slate-50 border border-slate-100 rounded-2xl animate-in fade-in slide-in-from-top-2">
           <form className="flex gap-2 mb-4" onSubmit={agregarGasto}>
-            <input className="flex-2 bg-white border border-gray-300 rounded p-2 text-sm text-gray-700 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 w-full" type="text" name="concepto" placeholder="Concepto" value={nuevoGasto.concepto} onChange={manejarCambioGasto} required />
-            <input className="flex-1 bg-white border border-gray-300 rounded p-2 text-sm text-gray-700 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 w-24" type="number" name="monto" placeholder="$" value={nuevoGasto.monto} onChange={manejarCambioGasto} required />
-            <button type="submit" className="bg-emerald-500 hover:bg-emerald-600 text-white px-3 rounded font-bold transition-colors shadow-sm">+</button>
+            <input className="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400" type="text" name="concepto" placeholder="Concepto..." value={nuevoGasto.concepto} onChange={manejarCambioGasto} required />
+            <input className="w-20 bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400" type="number" name="monto" placeholder="$" value={nuevoGasto.monto} onChange={manejarCambioGasto} required />
+            <button type="submit" className="bg-teal-600 active:bg-teal-700 text-white w-10 flex items-center justify-center rounded-xl font-bold shadow-sm">+</button>
           </form>
 
-          <ul className="space-y-2 mb-4 max-h-32 overflow-y-auto pr-1">
+          <ul className="space-y-3 mb-4 max-h-40 overflow-y-auto pr-1">
             {listaGastos.map((gasto, i) => (
-              <li key={gasto.id || i} className="flex justify-between items-center text-sm border-b border-gray-200 pb-1">
-                <span className="text-gray-700">{gasto.concepto}</span>
-                <div className="flex items-center gap-2">
-                  <span className="text-orange-500 font-medium">-${gasto.monto}</span>
-                  <button onClick={() => borrarGasto(gasto.id)} className="text-red-400 hover:text-red-600 text-xs" title="Eliminar gasto">🗑️</button>
+              <li key={gasto.id || i} className="flex justify-between items-center bg-white p-2.5 rounded-xl border border-slate-100 shadow-sm">
+                <span className="text-sm font-medium text-slate-700">{gasto.concepto}</span>
+                <div className="flex items-center gap-3">
+                  <span className="text-orange-500 font-bold text-sm">-${gasto.monto}</span>
+                  <button onClick={() => borrarGasto(gasto.id)} className="text-slate-300 hover:text-red-500 active:scale-90 transition-transform">
+                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                  </button>
                 </div>
               </li>
             ))}
           </ul>
 
-          <div className="pt-3 border-t border-gray-200 text-sm">
+          <div className="pt-3 border-t border-slate-200">
             <div className="flex justify-between mb-1">
-              <span className="text-gray-500">Total Gastado:</span>
-              <span className="font-bold text-gray-800">${totalGastado} MXN</span>
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Gastado</span>
+              <span className="font-bold text-slate-700">${totalGastado}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-500">Restante:</span>
-              <span className={`font-bold ${restante < 0 ? 'text-red-500' : 'text-emerald-600'}`}>${restante} MXN</span>
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Restante</span>
+              <span className={`font-black ${restante < 0 ? 'text-red-500' : 'text-emerald-500'}`}>${restante}</span>
             </div>
           </div>
         </div>
       )}
-      {mostrarItinerario && <Itinerario viajeId={viaje.id} />}
-    </li>
+      {mostrarItinerario && <div className="mt-4 animate-in fade-in slide-in-from-top-2"><Itinerario viajeId={viaje.id} /></div>}
+    </div>
   );
 }
