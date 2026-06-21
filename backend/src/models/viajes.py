@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, Float, Date, Time, ForeignKey
+from sqlalchemy import Column, String, Integer, Float, Date, Time, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from src.core.db import Base
 
@@ -38,3 +38,10 @@ class Gasto(Base):
     fecha_pago = Column(Date)
 
     viaje = relationship("Viaje", back_populates="gastos")
+
+class Tarea(Base):
+    __tablename__ = "tareas"
+
+    id = Column(Integer, primary_key=True, index=True)
+    texto = Column(String, index=True)
+    completada = Column(Boolean, default=False)

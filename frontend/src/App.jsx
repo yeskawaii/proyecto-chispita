@@ -4,6 +4,7 @@ import FormularioViaje from './components/FormularioViaje';
 import TarjetaViaje from './components/TarjetaViaje';
 import SelectorIdentidad from './components/SelectorIdentidad';
 import EstadoAnimo from './components/EstadoAnimo';
+import ListaTareas from './components/ListaTareas';
 
 function urlBase64ToUint8Array(base64String) {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -47,6 +48,39 @@ function App() {
     setViajes(viajes.filter(v => v.id !== id));
   };
 
+  useEffect(() => {
+    if (!usuarioActivo) return;
+
+    // Calculamos la URL del WebSocket basada en VITE_API_URL
+    const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    const wsUrl = backendUrl.replace(/^http/, 'ws') + `/ws/${usuarioActivo}`;
+
+    const socket = new WebSocket(wsUrl);
+
+    socket.onopen = () => {
+      console.log('Conectado a WebSocket como:', usuarioActivo);
+    };
+
+    socket.onmessage = (event) => {
+      console.log('Mensaje recibido por WS:', event.data);
+      try {
+        const data = JSON.parse(event.data);
+        if (data.tipo === 'ACTUALIZACION_TAREAS') {
+          window.dispatchEvent(new CustomEvent('WS_ACTUALIZACION_TAREAS'));
+        }
+      } catch (err) {}
+    };
+
+    socket.onclose = () => {
+      console.log('Desconectado de WebSocket');
+    };
+
+    // Cleanup: cerramos la conexión al desmontar o cambiar de usuario
+    return () => {
+      socket.close();
+    };
+  }, [usuarioActivo]);
+
   const solicitarPermisosNotificacion = async () => {
     if (!('Notification' in window) || !('serviceWorker' in navigator)) {
       alert('Tu navegador no soporta notificaciones web.');
@@ -56,10 +90,10 @@ function App() {
     if (permission === 'granted') {
       try {
         const swRegistration = await navigator.serviceWorker.ready;
-        
+
         const publicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
         const convertedVapidKey = urlBase64ToUint8Array(publicKey);
-        
+
         const subscription = await swRegistration.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey: convertedVapidKey
@@ -102,6 +136,8 @@ function App() {
         </div>
 
         <EstadoAnimo usuarioActivo={usuarioActivo} />
+
+        {usuarioActivo && <ListaTareas />}
         
         <FormularioViaje onViajeGuardado={agregarNuevoViaje} />
 

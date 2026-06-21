@@ -70,3 +70,23 @@ class GastoResponse(GastoBase):
 class ViajeResponseFull(ViajeResponse):
     itinerarios: list[ItinerarioResponse] = []
     gastos: list[GastoResponse] = []
+
+# ==========================================
+# 5. ESQUEMAS DE TAREAS
+# ==========================================
+class TareaBase(BaseModel):
+    texto: str
+    completada: bool = False
+
+class TareaCreate(TareaBase):
+    pass
+
+class TareaUpdate(BaseModel):
+    texto: Optional[str] = None
+    completada: Optional[bool] = None
+
+class TareaResponse(TareaBase):
+    id: int
+
+    class Config:
+        from_attributes = True
