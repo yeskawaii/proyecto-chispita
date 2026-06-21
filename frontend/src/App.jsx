@@ -23,10 +23,35 @@ function urlBase64ToUint8Array(base64String) {
 }
 
 function App() {
-  const [usuarioActivo, setUsuarioActivo] = useState(null);
+  const [usuarioActivo, setUsuarioActivo] = useState(() => localStorage.getItem('usuarioActivo') || null);
   const [viajes, setViajes] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [errorConexion, setErrorConexion] = useState(false);
+
+  const APP_VERSION = '1.0.1';
+
+  useEffect(() => {
+    const savedVersion = localStorage.getItem('app_version');
+    if (savedVersion !== APP_VERSION) {
+      // Guardamos la sesión antes de purgar
+      const user = localStorage.getItem('usuarioActivo');
+      
+      localStorage.clear();
+      localStorage.setItem('app_version', APP_VERSION);
+      if (user) localStorage.setItem('usuarioActivo', user);
+      
+      window.location.reload(true);
+    }
+  }, []);
+
+  const handleSetUsuario = (usuario) => {
+    setUsuarioActivo(usuario);
+    if (usuario) {
+      localStorage.setItem('usuarioActivo', usuario);
+    } else {
+      localStorage.removeItem('usuarioActivo');
+    }
+  };
 
   useEffect(() => {
     getViajes()
@@ -93,7 +118,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-cyan-100 via-sky-50 to-emerald-100 text-gray-800 p-6 md:p-10 font-sans selection:bg-teal-500/30">
-      <SelectorIdentidad onSeleccion={setUsuarioActivo} />
+      <SelectorIdentidad onSeleccion={handleSetUsuario} />
       <div className="max-w-6xl mx-auto">
         <h1 className="text-4xl md:text-5xl font-black text-center mb-6 tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-cyan-600 drop-shadow-sm">
           Viajes con mi Chispita ✈️🌴
