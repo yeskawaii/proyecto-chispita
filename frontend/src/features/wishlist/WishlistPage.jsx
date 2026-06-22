@@ -7,6 +7,8 @@ export default function WishlistPage() {
   const [nivelActivo, setNivelActivo] = useState(1);
   const [ideas, setIdeas] = useState([]);
   const [nuevaIdea, setNuevaIdea] = useState({ title: '', description: '', budget_tier: 1 });
+  const [selectedRandomPlan, setSelectedRandomPlan] = useState(null);
+  const [toastMessage, setToastMessage] = useState('');
 
   const cargarIdeas = async () => {
     try {
@@ -34,6 +36,24 @@ export default function WishlistPage() {
   const ideasFiltradas = ideas.filter(idea => idea.budget_tier === nivelActivo);
 
   const getIcono = (tier) => niveles.find(n => n.id === tier)?.icon || '✨';
+
+  const handleRandomChoice = () => {
+    if (ideasFiltradas.length === 0) {
+      setToastMessage('No hay planes en esta categoría aún 🥺');
+      setTimeout(() => setToastMessage(''), 3000);
+      return;
+    }
+    const randomIndex = Math.floor(Math.random() * ideasFiltradas.length);
+    setSelectedRandomPlan(ideasFiltradas[randomIndex]);
+    setTimeout(() => {
+      document.getElementById('modal-random-plan').showModal();
+    }, 50);
+  };
+
+  const cerrarModalRandom = () => {
+    document.getElementById('modal-random-plan').close();
+    setTimeout(() => setSelectedRandomPlan(null), 300);
+  };
 
   const abrirModal = () => document.getElementById('modal-nueva-idea').showModal();
   const cerrarModal = () => {
@@ -100,6 +120,22 @@ export default function WishlistPage() {
           </button>
         ))}
       </div>
+
+      {/* Botón de Decisión Aleatoria */}
+      <button 
+        onClick={handleRandomChoice}
+        className="w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold py-3.5 px-4 rounded-2xl shadow-md shadow-indigo-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2 mb-6"
+      >
+        <span className="text-xl">🎲</span>
+        Decisión Aleatoria
+      </button>
+
+      {/* Toast */}
+      {toastMessage && (
+        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 bg-slate-800/95 backdrop-blur-sm text-white px-5 py-3 rounded-full text-sm font-medium shadow-xl animate-in fade-in slide-in-from-top-4">
+          {toastMessage}
+        </div>
+      )}
 
       {/* Contenedor de Tarjetas */}
       <div className="flex flex-col gap-4 pb-10">
@@ -187,6 +223,31 @@ export default function WishlistPage() {
             </button>
           </form>
         </div>
+      </dialog>
+
+      {/* Bottom Sheet Random Plan */}
+      <dialog 
+        id="modal-random-plan" 
+        className="backdrop:bg-slate-900/60 p-0 m-0 mt-auto fixed inset-x-0 bottom-0 max-w-md w-full mx-auto rounded-t-[2rem] bg-indigo-600 text-white shadow-2xl transition-transform ease-out duration-300 open:animate-in open:slide-in-from-bottom-full"
+      >
+        {selectedRandomPlan && (
+          <div className="p-8 pb-[calc(2rem+env(safe-area-inset-bottom))] flex flex-col items-center text-center">
+            <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center text-5xl mb-6 shadow-inner border border-white/30">
+               🎲
+            </div>
+            <h3 className="text-xs font-bold text-indigo-200 uppercase tracking-widest mb-2">¡El destino ha hablado!</h3>
+            <h2 className="text-3xl font-black mb-4 leading-tight">{selectedRandomPlan.title}</h2>
+            <p className="text-indigo-100 font-medium mb-8 leading-relaxed">
+              {selectedRandomPlan.description || 'Un plan sorpresa, ¡prepárate para la aventura!'}
+            </p>
+            <button 
+              onClick={cerrarModalRandom}
+              className="w-full bg-white text-indigo-600 font-black py-4 rounded-2xl active:scale-[0.98] transition-all shadow-xl text-[15px]"
+            >
+              ¡Vamos! ✨
+            </button>
+          </div>
+        )}
       </dialog>
     </div>
   );
