@@ -30,10 +30,14 @@ export default defineConfig({
         display: 'standalone',
         icons: [
           {
-            src: '/pwa-icon.svg',
-            sizes: '192x192 512x512',
-            type: 'image/svg+xml',
-            purpose: 'any maskable'
+            src: 'icono-chispita-192.png',
+            type: 'image/png',
+            sizes: '192x192'
+          },
+          {
+            src: 'icono-chispita-512.png',
+            type: 'image/png',
+            sizes: '512x512'
           }
         ]
       }
