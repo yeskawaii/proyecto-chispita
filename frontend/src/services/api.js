@@ -72,3 +72,18 @@ export const deleteItinerario = async (viajeId, itemId) => {
   });
   return res.json();
 };
+
+// api de eventos
+export const getEventos = async () => {
+  const res = await fetch(`${API_URL}/eventos/`);
+  return res.json();
+};
+
+export const postEvento = async (evento) => {
+  const res = await fetch(`${API_URL}/eventos/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(evento)
+  });
+  return res.json();
+};

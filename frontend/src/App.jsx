@@ -7,6 +7,7 @@ import BottomNavBar from './components/layout/BottomNavBar';
 import EstadoAnimo from './features/estado/EstadoAnimo';
 import ListaTareas from './features/tareas/ListaTareas';
 import WishlistPage from './features/wishlist/WishlistPage';
+import CalendarioCompartido from './features/calendario/CalendarioCompartido';
 import { useWebSockets } from './hooks/useWebSockets';
 
 function urlBase64ToUint8Array(base64String) {
@@ -168,7 +169,7 @@ function App() {
       {/* Encabezado Principal */}
       <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-slate-100 px-6 py-4 flex justify-between items-center pt-[env(safe-area-inset-top,1rem)]">
         <h1 className="text-2xl font-black tracking-tight text-teal-600">
-          {vistaActiva === 'viajes' ? 'Mis Viajes' : vistaActiva === 'tareas' ? 'Checklist' : vistaActiva === 'ideas' ? 'Wishlist' : 'Mi Perfil'}
+          {vistaActiva === 'viajes' ? 'Mis Viajes' : vistaActiva === 'tareas' ? 'Checklist' : vistaActiva === 'ideas' ? 'Wishlist' : vistaActiva === 'calendario' ? 'Eventos' : 'Mi Perfil'}
         </h1>
         {vistaActiva === 'perfil' && (
           <button onClick={solicitarPermisosNotificacion} className="text-teal-600 p-2 rounded-full hover:bg-teal-50 active:scale-95 transition-all">
@@ -221,6 +222,13 @@ function App() {
         {/* VISTA: IDEAS / WISHLIST */}
         {vistaActiva === 'ideas' && (
           <WishlistPage />
+        )}
+
+        {/* VISTA: CALENDARIO */}
+        {vistaActiva === 'calendario' && (
+          <div className="mt-2">
+            <CalendarioCompartido />
+          </div>
         )}
 
         {/* VISTA: PERFIL */}
