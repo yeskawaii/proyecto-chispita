@@ -1,10 +1,18 @@
 import { useState, useEffect } from 'react';
+import ConfirmModal from '../../components/ui/ConfirmModal';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 export default function ListaTareas() {
   const [tareas, setTareas] = useState([]);
   const [nuevoTexto, setNuevoTexto] = useState('');
+
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {}
+  });
 
   const cargarTareas = async () => {
     try {
@@ -57,14 +65,21 @@ export default function ListaTareas() {
     }
   };
 
-  const eliminarTarea = async (id) => {
-    try {
-      await fetch(`${API_URL}/api/tareas/${id}`, {
-        method: 'DELETE'
-      });
-    } catch (err) {
-      console.error(err);
-    }
+  const eliminarTarea = (id) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Eliminar Tarea',
+      message: '¿Seguro que quieres eliminar esta tarea?',
+      onConfirm: async () => {
+        try {
+          await fetch(`${API_URL}/api/tareas/${id}`, {
+            method: 'DELETE'
+          });
+        } catch (err) {
+          console.error(err);
+        }
+      }
+    });
   };
 
   return (
@@ -130,6 +145,14 @@ export default function ListaTareas() {
           ))
         )}
       </div>
+
+      <ConfirmModal 
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        onConfirm={confirmModal.onConfirm}
+        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+      />
     </div>
   );
 }

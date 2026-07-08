@@ -1,9 +1,17 @@
 import { useState, useEffect } from 'react';
 import { getItinerario, postItinerario, deleteItinerario } from '../../services/api';
+import ConfirmModal from '../../components/ui/ConfirmModal';
 
 export default function Itinerario({ viajeId }) {
   const [lista, setLista] = useState([]);
   const [nuevoItem, setNuevoItem] = useState({ tipo: 'actividad', titulo: '', fecha: '', hora_inicio: '' });
+
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {}
+  });
 
   useEffect(() => {
     getItinerario(viajeId).then(setLista).catch(console.error);
@@ -29,13 +37,20 @@ export default function Itinerario({ viajeId }) {
     }
   };
 
-  const borrarActividad = async (itemId) => {
-    try {
-      await deleteItinerario(viajeId, itemId);
-      setLista(lista.filter(i => i.id !== itemId));
-    } catch (error) {
-      console.error("Error al borrar itinerario:", error);
-    }
+  const borrarActividad = (itemId) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Eliminar Actividad',
+      message: '¿Seguro que quieres eliminar esta actividad del itinerario?',
+      onConfirm: async () => {
+        try {
+          await deleteItinerario(viajeId, itemId);
+          setLista(lista.filter(i => i.id !== itemId));
+        } catch (error) {
+          console.error("Error al borrar itinerario:", error);
+        }
+      }
+    });
   };
 
   const inputClass = "bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400 w-full transition-all";
@@ -77,6 +92,14 @@ export default function Itinerario({ viajeId }) {
           </li>
         ))}
       </ul>
+
+      <ConfirmModal 
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        onConfirm={confirmModal.onConfirm}
+        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+      />
     </div>
   );
 }

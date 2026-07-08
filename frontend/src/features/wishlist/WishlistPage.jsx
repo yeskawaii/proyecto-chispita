@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import WishlistCard from './WishlistCard';
+import ConfirmModal from '../../components/ui/ConfirmModal';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
@@ -9,6 +10,13 @@ export default function WishlistPage() {
   const [nuevaIdea, setNuevaIdea] = useState({ title: '', description: '', budget_tier: 1 });
   const [selectedRandomPlan, setSelectedRandomPlan] = useState(null);
   const [toastMessage, setToastMessage] = useState('');
+
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {}
+  });
 
   const cargarIdeas = async () => {
     try {
@@ -83,15 +91,22 @@ export default function WishlistPage() {
     }
   };
 
-  const borrarIdea = async (id) => {
-    try {
-      const res = await fetch(`${API_URL}/api/wishlist/${id}`, { method: 'DELETE' });
-      if (res.ok) {
-        setIdeas(ideas.filter(idea => idea.id !== id));
+  const borrarIdea = (id) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Eliminar Idea',
+      message: '¿Seguro que quieres eliminar esta idea de la wishlist?',
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`${API_URL}/api/wishlist/${id}`, { method: 'DELETE' });
+          if (res.ok) {
+            setIdeas(ideas.filter(idea => idea.id !== id));
+          }
+        } catch (error) {
+          console.error("Error al borrar idea:", error);
+        }
       }
-    } catch (error) {
-      console.error("Error al borrar idea:", error);
-    }
+    });
   };
 
   const inputClass = "w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:bg-white transition-all text-[15px]";
@@ -249,6 +264,14 @@ export default function WishlistPage() {
           </div>
         )}
       </dialog>
+
+      <ConfirmModal 
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        onConfirm={confirmModal.onConfirm}
+        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+      />
     </div>
   );
 }

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from src.core.db import get_db
 from src.models.eventos import Evento
@@ -18,3 +18,12 @@ def crear_evento(evento: EventoCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(nuevo_evento)
     return nuevo_evento
+
+@router.delete("/{evento_id}")
+def eliminar_evento(evento_id: int, db: Session = Depends(get_db)):
+    evento = db.query(Evento).filter(Evento.id == evento_id).first()
+    if not evento:
+        raise HTTPException(status_code=404, detail="Ese evento no existe.")
+    db.delete(evento)
+    db.commit()
+    return {"status": "ok", "mensaje": "Evento eliminado."}

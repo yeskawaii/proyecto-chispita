@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { getEventos, postEvento, getViajes } from '../../services/api';
+import { getEventos, postEvento, getViajes, deleteEvento, deleteViaje } from '../../services/api';
+import ConfirmModal from '../../components/ui/ConfirmModal';
 
 // Helpers para el calendario
 const getDaysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
@@ -23,6 +24,14 @@ const CalendarioCompartido = () => {
   const [nuevoTitulo, setNuevoTitulo] = useState('');
   const [horaInicio, setHoraInicio] = useState('');
   const [horaFin, setHoraFin] = useState('');
+
+  // Estado del Modal de confirmación
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {}
+  });
 
   useEffect(() => {
     const user = localStorage.getItem('usuarioActivo');
@@ -128,6 +137,54 @@ const CalendarioCompartido = () => {
       console.error('Error al crear evento:', error);
       alert('Hubo un error al guardar el evento.');
     }
+  };
+
+  const handleEliminarEvento = async (eventoId) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Eliminar Evento',
+      message: '¿Seguro que quieres eliminar este evento? Esta acción no se puede deshacer.',
+      onConfirm: async () => {
+        try {
+          await deleteEvento(eventoId);
+          const nuevosEventos = events.filter(e => e.id !== eventoId);
+          setEvents(nuevosEventos);
+          
+          const dayEventos = nuevosEventos.filter(ev => (ev.fecha || ev.date) === selectedDateStr);
+          setSelectedDayEvents(prev => ({ ...prev, eventos: dayEventos }));
+        } catch (error) {
+          console.error('Error al eliminar evento:', error);
+          alert('Hubo un error al eliminar el evento.');
+        }
+      }
+    });
+  };
+
+  const handleEliminarViaje = async (viajeId) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Eliminar Viaje',
+      message: '¿Seguro que quieres eliminar este viaje? Se borrarán también todos sus gastos y el itinerario.',
+      onConfirm: async () => {
+        try {
+          await deleteViaje(viajeId);
+          const nuevosViajes = viajes.filter(v => v.id !== viajeId);
+          setViajes(nuevosViajes);
+          
+          const checkDate = new Date(`${selectedDateStr}T00:00:00`);
+          const dayViajes = nuevosViajes.filter(viaje => {
+            if (!viaje.fecha_inicio || !viaje.fecha_fin) return false;
+            const fInicio = new Date(`${viaje.fecha_inicio}T00:00:00`);
+            const fFin = new Date(`${viaje.fecha_fin}T00:00:00`);
+            return checkDate >= fInicio && checkDate <= fFin;
+          });
+          setSelectedDayEvents(prev => ({ ...prev, viajes: dayViajes }));
+        } catch (error) {
+          console.error('Error al eliminar viaje:', error);
+          alert('Hubo un error al eliminar el viaje.');
+        }
+      }
+    });
   };
 
   const formatHora = (timeStr) => {
@@ -236,12 +293,19 @@ const CalendarioCompartido = () => {
                       <h4 className="text-xs font-bold text-teal-600 uppercase tracking-wider mb-2">Viajes</h4>
                       <div className="space-y-2">
                         {selectedDayEvents.viajes.map(viaje => (
-                          <div key={viaje.id} className="bg-teal-50 border border-teal-100 p-3 rounded-xl flex items-center gap-3">
+                          <div key={viaje.id} className="bg-teal-50 border border-teal-100 p-3 rounded-xl flex items-center gap-3 relative">
                             <span className="text-2xl">✈️</span>
-                            <div>
+                            <div className="flex-1">
                               <p className="font-bold text-teal-900">{viaje.titulo}</p>
                               <p className="text-xs text-teal-600 font-medium">Del {viaje.fecha_inicio} al {viaje.fecha_fin}</p>
                             </div>
+                            <button 
+                              onClick={() => handleEliminarViaje(viaje.id)}
+                              className="text-red-400 hover:text-red-600 transition-colors p-1 bg-white rounded-full shadow-sm flex-shrink-0"
+                              title="Eliminar viaje"
+                            >
+                              🗑️
+                            </button>
                           </div>
                         ))}
                       </div>
@@ -254,9 +318,9 @@ const CalendarioCompartido = () => {
                       <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Eventos</h4>
                       <div className="space-y-2">
                         {selectedDayEvents.eventos.map(evento => (
-                          <div key={evento.id} className="bg-gray-50 border border-gray-100 p-3 rounded-xl flex items-start gap-3">
+                          <div key={evento.id} className="bg-gray-50 border border-gray-100 p-3 rounded-xl flex items-start gap-3 relative">
                             <span className="text-2xl mt-0.5">{getEventIcon(evento.autor || evento.author)}</span>
-                            <div>
+                            <div className="flex-1">
                               <p className="font-bold text-gray-800">{evento.titulo}</p>
                               <p className="text-xs text-gray-500 mt-0.5">
                                 Creado por {evento.autor || evento.author}
@@ -267,6 +331,13 @@ const CalendarioCompartido = () => {
                                 </div>
                               )}
                             </div>
+                            <button 
+                              onClick={() => handleEliminarEvento(evento.id)}
+                              className="text-red-400 hover:text-red-600 transition-colors p-1 bg-white rounded-full shadow-sm flex-shrink-0 mt-1"
+                              title="Eliminar evento"
+                            >
+                              🗑️
+                            </button>
                           </div>
                         ))}
                       </div>
@@ -353,6 +424,14 @@ const CalendarioCompartido = () => {
           </div>
         </div>
       )}
+
+      <ConfirmModal 
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        onConfirm={confirmModal.onConfirm}
+        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+      />
     </div>
   );
 };

@@ -87,3 +87,10 @@ export const postEvento = async (evento) => {
   });
   return res.json();
 };
+
+export const deleteEvento = async (eventoId) => {
+  const res = await fetch(`${API_URL}/eventos/${eventoId}`, {
+    method: 'DELETE',
+  });
+  return res.json();
+};

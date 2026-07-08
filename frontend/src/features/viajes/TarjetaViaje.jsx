@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { getIdeasIA, getGastos, postGasto, deleteViaje, deleteGasto } from '../../services/api';
 import Itinerario from './Itinerario';
+import ConfirmModal from '../../components/ui/ConfirmModal';
 
 export default function TarjetaViaje({ viaje, onDelete }) {
   const [ideas, setIdeas] = useState('');
@@ -9,6 +10,13 @@ export default function TarjetaViaje({ viaje, onDelete }) {
   const [listaGastos, setListaGastos] = useState([]);
   const [nuevoGasto, setNuevoGasto] = useState({ concepto: '', monto: '' });
   const [mostrarItinerario, setMostrarItinerario] = useState(false);
+
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {}
+  });
 
   const traerIdeas = async () => {
     setCargando(true);
@@ -53,22 +61,36 @@ export default function TarjetaViaje({ viaje, onDelete }) {
     }
   };
 
-  const borrarViaje = async () => {
-    try {
-      await deleteViaje(viaje.id);
-      if (onDelete) onDelete(viaje.id);
-    } catch (error) {
-      console.error("Error al borrar viaje:", error);
-    }
+  const borrarViaje = () => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Eliminar Viaje',
+      message: '¿Seguro que quieres eliminar este viaje por completo?',
+      onConfirm: async () => {
+        try {
+          await deleteViaje(viaje.id);
+          if (onDelete) onDelete(viaje.id);
+        } catch (error) {
+          console.error("Error al borrar viaje:", error);
+        }
+      }
+    });
   };
 
-  const borrarGasto = async (gastoId) => {
-    try {
-      await deleteGasto(gastoId);
-      setListaGastos(listaGastos.filter(g => g.id !== gastoId));
-    } catch (error) {
-      console.error("Error al borrar gasto:", error);
-    }
+  const borrarGasto = (gastoId) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Eliminar Gasto',
+      message: '¿Seguro que quieres eliminar este gasto?',
+      onConfirm: async () => {
+        try {
+          await deleteGasto(gastoId);
+          setListaGastos(listaGastos.filter(g => g.id !== gastoId));
+        } catch (error) {
+          console.error("Error al borrar gasto:", error);
+        }
+      }
+    });
   };
 
   const totalGastado = listaGastos.reduce((total, gasto) => total + gasto.monto, 0);
@@ -158,6 +180,14 @@ export default function TarjetaViaje({ viaje, onDelete }) {
         </div>
       )}
       {mostrarItinerario && <div className="mt-4 animate-in fade-in slide-in-from-top-2"><Itinerario viajeId={viaje.id} /></div>}
+
+      <ConfirmModal 
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        onConfirm={confirmModal.onConfirm}
+        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+      />
     </div>
   );
 }
